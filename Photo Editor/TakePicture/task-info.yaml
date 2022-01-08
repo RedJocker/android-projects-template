@@ -14,6 +14,8 @@ files:
   visible: true
 - name: src/main/res/drawable-v24/ic_launcher_foreground.xml
   visible: true
+- name: src/main/res/drawable/myexample.jpg
+  visible: true
 - name: src/main/res/mipmap-anydpi-v26/ic_launcher.xml
   visible: true
 - name: src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml
@@ -23,4 +25,6 @@ files:
 - name: src/main/java/org/hyperskill/photoeditor/MainActivity.kt
   visible: true
 - name: src/test/java/org/hyperskill/photoeditor/Stage1UnitTest.kt
+  visible: false
+- name: src/test/java/org/hyperskill/photoeditor/TestUtils.kt
   visible: false
