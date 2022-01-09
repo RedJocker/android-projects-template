@@ -30,9 +30,7 @@ class Stage1UnitTest {
     private val activity = activityController.setup().get()
 
     private val ivPhoto by lazy { activity.findViewByString<ImageView>("ivPhoto") }
-
     private val btnGallery by lazy { activity.findViewByString<Button>("btnGallery") }
-
     private val shadowActivity: ShadowActivity by lazy { shadowOf(activity) }
 
     @Test
@@ -50,7 +48,9 @@ class Stage1UnitTest {
 
     @Test
     fun testShouldCheckButtonExist() {
-        btnGallery
+        assertEquals("Wrong text for btnGallery",
+            "GALLERY", btnGallery.text.toString().toUpperCase()
+        )
     }
 
     @Test
