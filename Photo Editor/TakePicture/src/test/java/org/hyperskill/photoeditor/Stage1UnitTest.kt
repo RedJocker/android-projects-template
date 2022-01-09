@@ -5,6 +5,7 @@ import android.content.ContentResolver
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import android.os.Looper
 import android.provider.MediaStore
 import android.widget.Button
 import android.widget.ImageView
@@ -17,6 +18,7 @@ import org.robolectric.RobolectricTestRunner
 import org.robolectric.shadows.ShadowActivity
 import org.robolectric.Shadows.shadowOf
 import java.lang.NullPointerException
+import kotlin.AssertionError
 
 // version 0.2
 @RunWith(RobolectricTestRunner::class)
@@ -82,19 +84,15 @@ class Stage1UnitTest {
     fun testShouldCheckButtonLoadsImage() {
 
         btnGallery.performClick()
-
         val activityResult = createGalleryPickActivityResultStub(activity)
-
-
         val intent = shadowActivity.peekNextStartedActivityForResult()?.intent
             ?: throw AssertionError(messageIntentNotFound)
-
         shadowActivity.receiveResult(
             intent, Activity.RESULT_OK, activityResult
         )
+        shadowOf(Looper.getMainLooper()).runToEndOfTasks()
 
         val messageIvPhotoWasNull = "ivPhoto drawable was null"
-
         assertNotNull(messageIvPhotoWasNull, ivPhoto.drawable)
 
         val actualDrawableId: Int = try {
