@@ -12,8 +12,8 @@ import android.os.Looper
 import android.widget.Button
 import android.widget.ImageView
 import com.google.android.material.slider.Slider
-
 import org.hyperskill.photoeditor.TestUtils.findViewByString
+
 import org.junit.Assert.*
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -23,18 +23,20 @@ import org.robolectric.Shadows
 import org.robolectric.android.controller.ActivityController
 import org.robolectric.shadows.ShadowActivity
 import org.robolectric.shadows.ShadowLooper
-
+import kotlin.AssertionError
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
-import kotlin.AssertionError
 
 // version 0.2
 @RunWith(RobolectricTestRunner::class)
 class Stage2UnitTest {
 
     private val messageNullImage = "Initial image was null, it should be set with ___.setImageBitmap(createBitmap())"
+    private val messageNullAfterSlBrightness = "Image was null after slBrightness triggered"
     private val messageIntentNotFound = "No intent was found by tests. Have you launched an intent?"
+    private val messageWrongValuesFormat = "Wrong values after brightness applied. expected <(%d, %d, %d)> actual <(%d, %d, %d)>"
+
 
     private val activityController: ActivityController<MainActivity> = Robolectric.buildActivity(MainActivity::class.java)
     private val activity: MainActivity = activityController.setup().get()
@@ -68,6 +70,7 @@ class Stage2UnitTest {
 
         slBrightness.value += slBrightness.stepSize
         val bitmap = (ivPhoto.drawable as BitmapDrawable?)?.bitmap
+        shadowLooper.runToEndOfTasks()
         assertNotNull(message, bitmap)
         slBrightness.value -= slBrightness.stepSize
     }
@@ -82,11 +85,18 @@ class Stage2UnitTest {
         assertEquals(message, bitmap.width, bitmap2.width)
     }
 
+
     @Test
     fun testShouldCheckDefaultBitmapEdit() {
         val img0 = (ivPhoto.drawable as BitmapDrawable?)?.bitmap
             ?: throw AssertionError(messageNullImage)
-        val RGB0 = singleColor(img0)
+        val (initialRed, initialGreen, initialBlue) = singleColor(img0)
+        val (expectedRed1, expectedGreen1, expectedBlue1) = Triple(
+            initialRed + 110, initialGreen + 110, initialBlue + 105
+        )
+        val (expectedRed2, expectedGreen2, expectedBlue2) = Triple(
+            initialRed - 110, initialGreen - 120, initialBlue - 120
+        )
 
         slBrightness.value += slBrightness.stepSize * 5
         slBrightness.value += slBrightness.stepSize * 6
@@ -94,30 +104,33 @@ class Stage2UnitTest {
         Thread.sleep(200)
         shadowLooper.runToEndOfTasks()
 
+        val img1 = (ivPhoto.drawable as BitmapDrawable).bitmap ?: throw AssertionError(messageNullAfterSlBrightness)
+        val (actualRed1, actualGreen1, actualBlue1) = singleColor(img1)
+        val messageWrongValues1 = messageWrongValuesFormat.format(
+            expectedRed1, expectedGreen1, expectedBlue1,
+            actualRed1, actualGreen1, actualBlue1
+        )
 
-        val img2 = (ivPhoto.drawable as BitmapDrawable).bitmap
-        val RGB2 = singleColor(img2)
-        val message2 = "val0 ${RGB0} val2 ${RGB2}"
+        assertTrue(messageWrongValues1, abs(expectedRed1 - actualRed1) <= marginError)
+        assertTrue(messageWrongValues1, abs(expectedGreen1 - actualGreen1) <= marginError)
+        assertTrue(messageWrongValues1, abs(expectedBlue1 - actualBlue1) <= marginError)
 
-        assertTrue(message2, abs(RGB0.first + 110 - RGB2.first) <= marginError)
-        assertTrue(message2, abs(RGB0.second + 110 - RGB2.second) <= marginError)
-        assertTrue(message2, abs(RGB0.third + 105 - RGB2.third) <= marginError)
-
-
-        slBrightness.value -= slBrightness.stepSize*10
-        slBrightness.value -= slBrightness.stepSize*13
+        slBrightness.value -= slBrightness.stepSize * 10
+        slBrightness.value -= slBrightness.stepSize * 13
         shadowLooper.runToEndOfTasks()
         Thread.sleep(200)
         shadowLooper.runToEndOfTasks()
 
+        val img3 = (ivPhoto.drawable as BitmapDrawable).bitmap ?: throw AssertionError(messageNullAfterSlBrightness)
+        val (actualRed2, actualGreen2, actualBlue2) = singleColor(img3)
+        val messageWrongValues2 = messageWrongValuesFormat.format(
+            expectedRed2, expectedGreen2, expectedBlue2,
+            actualRed2, actualGreen2, actualBlue2
+        )
 
-        val img3 = (ivPhoto.drawable as BitmapDrawable).bitmap
-        val RGB3 = singleColor(img3)
-        val message3 = "val0 ${RGB0} val2 ${RGB3}"
-
-        assertTrue(message3, abs(RGB0.first - 110 - RGB3.first) <= marginError)
-        assertTrue(message3, abs(RGB0.second - 120 - RGB3.second) <= marginError)
-        assertTrue(message3, abs(RGB0.third - 120 - RGB3.third) <= marginError)
+        assertTrue(messageWrongValues2, abs(expectedRed2 - actualRed2) <= marginError)
+        assertTrue(messageWrongValues2, abs(expectedGreen2 - actualGreen2) <= marginError)
+        assertTrue(messageWrongValues2, abs(expectedBlue2 - actualBlue2) <= marginError)
     }
 
 
@@ -125,7 +138,6 @@ class Stage2UnitTest {
     fun testShouldCheckNewBitmapEdit() {
         val messageNullAfterLoading = "Image was null after loading from gallery"
         val messageNullAfterSlBrightness = "Image was null after slBrightness triggered"
-
 
         btnGallery.performClick()
         shadowLooper.runToEndOfTasks()
@@ -143,7 +155,7 @@ class Stage2UnitTest {
 
         val img0 = (ivPhoto.drawable as BitmapDrawable?)?.bitmap
             ?: throw AssertionError(messageNullAfterLoading)
-        val RGB0 = singleColor(img0)
+        val (initialRed, initialGreen, initialBlue) = singleColor(img0)
 
 
         slBrightness.value += slBrightness.stepSize * 3
@@ -153,15 +165,19 @@ class Stage2UnitTest {
         shadowLooper.runToEndOfTasks()
 
 
-
         val img2 = (ivPhoto.drawable as BitmapDrawable).bitmap
             ?: throw AssertionError(messageNullAfterSlBrightness)
-        val RGB2 = singleColor(img2, 80, 90)
-        val message2 = "val0 ${RGB0} val2 ${RGB2}"
+        val (actualRed, actualGreen, actualBlue) = singleColor(img2, 80, 90)
+        val (expectedRed, expectedGreen, expectedBlue) =
+            Triple(initialRed + 50, initialGreen + 50, initialBlue + 50)
 
-        assertTrue(message2, abs(RGB0.first+50-RGB2.first) <= marginError)
-        assertTrue(message2, abs(RGB0.second+50-RGB2.second) <= marginError)
-        assertTrue(message2, abs(RGB0.third+50-RGB2.third) <= marginError)
+        val messageWrongValues = messageWrongValuesFormat.format(
+            expectedRed, expectedGreen, expectedBlue,
+            actualRed, actualGreen, actualBlue
+        )
+        assertTrue(messageWrongValues, abs(expectedRed - actualRed) <= marginError)
+        assertTrue(messageWrongValues, abs(expectedGreen - actualGreen) <= marginError)
+        assertTrue(messageWrongValues, abs(expectedBlue - actualBlue) <= marginError)
     }
 
     private fun singleColor(source: Bitmap, x: Int = 70, y: Int = 60): Triple<Int, Int, Int> {
