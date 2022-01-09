@@ -12,7 +12,6 @@ import android.os.Looper
 import android.widget.Button
 import android.widget.ImageView
 import com.google.android.material.slider.Slider
-import kotlinx.coroutines.runBlocking
 
 import org.hyperskill.photoeditor.TestUtils.findViewByString
 import org.junit.Assert.*
@@ -23,13 +22,19 @@ import org.robolectric.RobolectricTestRunner
 import org.robolectric.Shadows
 import org.robolectric.android.controller.ActivityController
 import org.robolectric.shadows.ShadowActivity
+import org.robolectric.shadows.ShadowLooper
+
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
+import kotlin.AssertionError
 
 // version 0.2
 @RunWith(RobolectricTestRunner::class)
 class Stage2UnitTest {
+
+    private val messageNullImage = "Initial image was null, it should be set with ___.setImageBitmap(createBitmap())"
+    private val messageIntentNotFound = "No intent was found by tests. Have you launched an intent?"
 
     private val activityController: ActivityController<MainActivity> = Robolectric.buildActivity(MainActivity::class.java)
     private val activity: MainActivity = activityController.setup().get()
@@ -38,6 +43,7 @@ class Stage2UnitTest {
     private val btnGallery by lazy { activity.findViewByString<Button>("btnGallery") }
     private val slBrightness by lazy { activity.findViewByString<Slider>("slBrightness") }
     private val shadowActivity: ShadowActivity by lazy { Shadows.shadowOf(activity) }
+    private val shadowLooper: ShadowLooper by lazy { Shadows.shadowOf(Looper.getMainLooper()) }
 
     private val marginError = 1
 
@@ -58,17 +64,19 @@ class Stage2UnitTest {
 
     @Test
     fun testShouldCheckSliderNotCrashingByDefault() {
+        val message = "is \"ivPhoto\" not empty and no crash occurs while swiping slider?"
+
         slBrightness.value += slBrightness.stepSize
-        val bitmap = (ivPhoto.getDrawable() as BitmapDrawable).bitmap
-        val message2 = "is \"ivPhoto\" not empty and no crash occurs while swiping slider?"
-        assertNotNull(message2, bitmap)
+        val bitmap = (ivPhoto.drawable as BitmapDrawable?)?.bitmap
+        assertNotNull(message, bitmap)
         slBrightness.value -= slBrightness.stepSize
     }
 
     @Test
     fun testShouldCheckImageIsSetToDefaultBitmap() {
         val message = "is defaultBitmap set correctly?"
-        val bitmap = (ivPhoto.drawable as BitmapDrawable).bitmap
+
+        val bitmap = (ivPhoto.drawable as BitmapDrawable?)?.bitmap ?: throw AssertionError(messageNullImage)
         val bitmap2 = createBitmap()
         assertEquals(message, singleColor(bitmap), singleColor(bitmap2))
         assertEquals(message, bitmap.width, bitmap2.width)
@@ -76,107 +84,97 @@ class Stage2UnitTest {
 
     @Test
     fun testShouldCheckDefaultBitmapEdit() {
-        val img0 = (ivPhoto.drawable as BitmapDrawable).bitmap
-        val RGB0 = img0?.let { singleColor(it) }
-        runBlocking() {
-            slBrightness.value += slBrightness.stepSize * 5
-            slBrightness.value += slBrightness.stepSize * 6
+        val img0 = (ivPhoto.drawable as BitmapDrawable?)?.bitmap
+            ?: throw AssertionError(messageNullImage)
+        val RGB0 = singleColor(img0)
 
-            Shadows.shadowOf(Looper.getMainLooper()).idle()
-            Thread.sleep(200)
-            Shadows.shadowOf(Looper.getMainLooper()).idle()
-        }
+        slBrightness.value += slBrightness.stepSize * 5
+        slBrightness.value += slBrightness.stepSize * 6
+        shadowLooper.runToEndOfTasks()
+        Thread.sleep(200)
+        shadowLooper.runToEndOfTasks()
+
 
         val img2 = (ivPhoto.drawable as BitmapDrawable).bitmap
         val RGB2 = singleColor(img2)
         val message2 = "val0 ${RGB0} val2 ${RGB2}"
-        if (RGB0 != null) {
-            assertTrue(message2, abs(RGB0.first + 110 - RGB2.first) <= marginError)
-            assertTrue(message2, abs(RGB0.second + 110 - RGB2.second) <= marginError)
-            assertTrue(message2, abs(RGB0.third + 105 - RGB2.third) <= marginError)
-        }
 
-        runBlocking() {
-            slBrightness.value -= slBrightness.stepSize*10
-            slBrightness.value -= slBrightness.stepSize*13
+        assertTrue(message2, abs(RGB0.first + 110 - RGB2.first) <= marginError)
+        assertTrue(message2, abs(RGB0.second + 110 - RGB2.second) <= marginError)
+        assertTrue(message2, abs(RGB0.third + 105 - RGB2.third) <= marginError)
 
-            Shadows.shadowOf(Looper.getMainLooper()).idle()
-            Thread.sleep(200)
-            Shadows.shadowOf(Looper.getMainLooper()).idle()
-        }
+
+        slBrightness.value -= slBrightness.stepSize*10
+        slBrightness.value -= slBrightness.stepSize*13
+        shadowLooper.runToEndOfTasks()
+        Thread.sleep(200)
+        shadowLooper.runToEndOfTasks()
+
 
         val img3 = (ivPhoto.drawable as BitmapDrawable).bitmap
         val RGB3 = singleColor(img3)
         val message3 = "val0 ${RGB0} val2 ${RGB3}"
-        if (RGB0 != null) {
-            assertTrue(message3, abs(RGB0.first - 110 - RGB3.first) <= marginError)
-            assertTrue(message3, abs(RGB0.second - 120 - RGB3.second) <= marginError)
-            assertTrue(message3, abs(RGB0.third - 120 - RGB3.third) <= marginError)
-        }
 
-        slBrightness.value -= slBrightness.stepSize * 8
+        assertTrue(message3, abs(RGB0.first - 110 - RGB3.first) <= marginError)
+        assertTrue(message3, abs(RGB0.second - 120 - RGB3.second) <= marginError)
+        assertTrue(message3, abs(RGB0.third - 120 - RGB3.third) <= marginError)
     }
 
 
     @Test
     fun testShouldCheckNewBitmapEdit() {
+        val messageNullAfterLoading = "Image was null after loading from gallery"
+        val messageNullAfterSlBrightness = "Image was null after slBrightness triggered"
+
 
         btnGallery.performClick()
-        // Determine if two intents are the same for the purposes of intent resolution (filtering).
-        // That is, if their action, data, type, class, and categories are the same. This does
-        // not compare any extra data included in the intents
-        val activityResult = createGalleryPickActivityResultStub(activity)
-        val intent = shadowActivity!!.peekNextStartedActivityForResult().intent
-        Shadows.shadowOf(activity).receiveResult(
+        shadowLooper.runToEndOfTasks()
+
+        val activityResult: Intent = createGalleryPickActivityResultStub(activity)
+        val intent = shadowActivity.peekNextStartedActivityForResult()?.intent
+            ?: throw AssertionError(messageIntentNotFound)
+
+        shadowActivity.receiveResult(
             intent,
             Activity.RESULT_OK,
             activityResult
         )
+        shadowLooper.runToEndOfTasks()
 
-        val img0 = (ivPhoto.drawable as BitmapDrawable).bitmap
-        val RGB0 = img0?.let { singleColor(it) }
+        val img0 = (ivPhoto.drawable as BitmapDrawable?)?.bitmap
+            ?: throw AssertionError(messageNullAfterLoading)
+        val RGB0 = singleColor(img0)
 
-        runBlocking() {
-            slBrightness.value += slBrightness.stepSize * 3
-            slBrightness.value += slBrightness.stepSize * 2
-            Shadows.shadowOf(Looper.getMainLooper()).idle()
-            Thread.sleep(200)
-            Shadows.shadowOf(Looper.getMainLooper()).idle()
-        }
+
+        slBrightness.value += slBrightness.stepSize * 3
+        slBrightness.value += slBrightness.stepSize * 2
+        shadowLooper.runToEndOfTasks()
+        Thread.sleep(200)
+        shadowLooper.runToEndOfTasks()
+
+
 
         val img2 = (ivPhoto.drawable as BitmapDrawable).bitmap
+            ?: throw AssertionError(messageNullAfterSlBrightness)
         val RGB2 = singleColor(img2, 80, 90)
         val message2 = "val0 ${RGB0} val2 ${RGB2}"
 
-        if (RGB0 != null) {
-            assertTrue(message2, abs(RGB0.first+50-RGB2.first) <= marginError)
-            assertTrue(message2, abs(RGB0.second+50-RGB2.second) <= marginError)
-            assertTrue(message2, abs(RGB0.third+50-RGB2.third) <= marginError)
-        }
-
+        assertTrue(message2, abs(RGB0.first+50-RGB2.first) <= marginError)
+        assertTrue(message2, abs(RGB0.second+50-RGB2.second) <= marginError)
+        assertTrue(message2, abs(RGB0.third+50-RGB2.third) <= marginError)
     }
 
-    fun singleColor(source: Bitmap, x0: Int = 60, y0: Int = 70): Triple<Int, Int, Int> {
-        val width = source.width
-        val height = source.height
-        val pixels = IntArray(width * height)
-        // get pixel array from source
-        source.getPixels(pixels, 0, width, 0, 0, width, height)
+    private fun singleColor(source: Bitmap, x: Int = 70, y: Int = 60): Triple<Int, Int, Int> {
+        val pixel = source.getPixel(x, y)
 
+        val red = Color.red(pixel)
+        val green = Color.green(pixel)
+        val blue = Color.blue(pixel)
 
-        val y = x0
-        val x = y0
-        val index = y * width + x
-
-        // get color
-        val red: Int = Color.red(pixels[index])
-        val green: Int = Color.green(pixels[index])
-        val blue: Int = Color.blue(pixels[index])
-
-        return Triple(red, green, blue)
+        return  Triple(red,green,blue)
     }
 
-    fun createBitmap(): Bitmap {
+    private fun createBitmap(): Bitmap {
         val width = 200
         val height = 100
         val pixels = IntArray(width * height)
