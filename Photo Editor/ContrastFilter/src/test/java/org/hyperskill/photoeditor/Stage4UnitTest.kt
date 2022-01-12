@@ -71,7 +71,7 @@ class Stage4UnitTest {
     @Test
     fun testShouldCheckDefaultBitmapEdit2() {
         (ivPhoto.drawable as BitmapDrawable?)?.bitmap ?: throw AssertionError(messageNullInitialImage)
-        val expected = Triple(148, 176, 203)
+        val expected = Triple(149, 177, 205)
 
         slBrightness.value += slBrightness.stepSize
         slBrightness.value += slBrightness.stepSize
@@ -90,7 +90,7 @@ class Stage4UnitTest {
     @Test
     fun testShouldCheckDefaultBitmapEdit() {
         (ivPhoto.drawable as BitmapDrawable?)?.bitmap ?: throw AssertionError(messageNullInitialImage)
-        val expected = Triple(154, 222, 255)
+        val expected = Triple(141, 210, 255)
 
         slBrightness.value += slBrightness.stepSize
         slContrast.value += slContrast.stepSize * 9
@@ -103,6 +103,28 @@ class Stage4UnitTest {
         val actualImage = (ivPhoto.drawable as BitmapDrawable?)?.bitmap ?: throw AssertionError(messageNullAfterFilters)
         val actual = singleColor(actualImage, 90, 80)
         assertColorsValues(messageWrongValues, expected, actual, marginError)
+    }
+
+    @Test
+    fun testOrderOfSlidersEventsShouldNotMatter() {
+        (ivPhoto.drawable as BitmapDrawable?)?.bitmap ?: throw AssertionError(messageNullInitialImage)
+        val expected = Triple(141, 210, 255)
+        val wrongExpected = Triple(140, 170, 200)  //happens if brightness slider ignores contrast value
+
+        slContrast.value += slContrast.stepSize * 9
+        slContrast.value += slContrast.stepSize
+        slBrightness.value += slBrightness.stepSize
+
+        shadowLooper.runToEndOfTasks()
+        Thread.sleep(200)
+        shadowLooper.runToEndOfTasks()
+
+        val actualImage = (ivPhoto.drawable as BitmapDrawable?)?.bitmap ?: throw AssertionError(messageNullAfterFilters)
+        val actual = singleColor(actualImage, 90, 80)
+        val messageWrongOrder =
+            if(actual == wrongExpected) " Order of slider events should not matter."
+            else ""
+        assertColorsValues(messageWrongValues + messageWrongOrder, expected, actual, marginError)
     }
 
     private fun singleColor(source: Bitmap, x:Int = 70, y:Int = 60): Triple<Int, Int, Int> {
