@@ -4,162 +4,131 @@ import android.graphics.Bitmap
 import android.graphics.Color
 import android.graphics.drawable.BitmapDrawable
 import android.os.Looper
+import android.widget.Button
 import android.widget.ImageView
 import com.google.android.material.slider.Slider
-import kotlinx.coroutines.runBlocking
+import org.hyperskill.photoeditor.TestUtils.assertColorsValues
+import org.hyperskill.photoeditor.TestUtils.findViewByString
 import org.junit.Assert.*
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.Robolectric
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.Shadows
+import org.robolectric.shadows.ShadowActivity
+import org.robolectric.shadows.ShadowLooper
+import kotlin.AssertionError
 
-
+//version 0.2
 @RunWith(RobolectricTestRunner::class)
 class Stage5UnitTest {
 
+    private val messageNullInitialImage = "Initial image was null, it should be set with ___.setImageBitmap(createBitmap())"
+    private val messageNullAfterFilters = "Image was null after filters been applied"
+    private val messageWrongValues = "Wrong values after filters been applied."
+    private val marginError = 3
+
     private val activityController = Robolectric.buildActivity(MainActivity::class.java)
-    val activity = activityController.setup().get()
-    val marginError = 3
+    private val activity = activityController.setup().get()
+
+
+    private val ivPhoto by lazy { activity.findViewByString<ImageView>("ivPhoto") }
+    private val btnGallery by lazy { activity.findViewByString<Button>("btnGallery") }
+    private val btnSave by lazy { activity.findViewByString<Button>("btnSave") }
+    private val slBrightness by lazy { activity.findViewByString<Slider>("slBrightness") }
+    private val slContrast by lazy { activity.findViewByString<Slider>("slContrast") }
+    private val slSaturation by lazy { activity.findViewByString<Slider>("slSaturation") }
+    private val slGamma by lazy { activity.findViewByString<Slider>("slGamma") }
+    private val shadowActivity: ShadowActivity by lazy { Shadows.shadowOf(activity) }
+    private val shadowLooper: ShadowLooper by lazy { Shadows.shadowOf(Looper.getMainLooper()) }
 
     @Test
     fun testShouldCheckSliderExist() {
-        val slSaturation = activity.findViewById<Slider>(R.id.slSaturation)
+        val message2 = "\"slSaturation\" should have proper stepSize attribute"
+        assertEquals(message2,  10f, slSaturation.stepSize)
 
-        val message = "does view with id \"slSaturation\" placed in activity?"
-        assertNotNull(message, slSaturation)
+        val message3 = "\"slSaturation\" should have proper valueFrom attribute"
+        assertEquals(message3,  -250f, slSaturation.valueFrom)
 
-        val message2 = "\"slider saturation\" should have proper stepSize attribute"
-        assertEquals(message2, slSaturation.stepSize, 10f)
+        val message4 = "\"slSaturation\" should have proper valueTo attribute"
+        assertEquals(message4,  250f, slSaturation.valueTo)
 
-        val message3 = "\"slider saturation\" should have proper valueFrom attribute"
-        assertEquals(message3, slSaturation.valueFrom, -250f)
-
-        val message4 = "\"slider saturation\" should have proper valueTo attribute"
-        assertEquals(message4, slSaturation.valueTo, 250f)
-
-        val message5 = "\"slider saturation\" should have proper initial value"
-        assertEquals(message5, slSaturation.value, 0f)
+        val message5 = "\"slSaturation\" should have proper initial value"
+        assertEquals(message5,  0f, slSaturation.value)
     }
 
     @Test
     fun testShouldCheckGammaSliderExist() {
+        val message2 = "\"slGamma\" should have proper stepSize attribute"
+        assertEquals(message2,  0.2f, slGamma.stepSize)
 
-        val slGamma = activity.findViewById<Slider>(R.id.slGamma)
+        val message3 = "\"slGamma\" should have proper valueFrom attribute"
+        assertEquals(message3,  0.2f, slGamma.valueFrom)
 
-        val message = "does view with id \"slGamma\" placed in activity?"
-        assertNotNull(message, slGamma)
+        val message4 = "\"slGamma\" should have proper valueTo attribute"
+        assertEquals(message4,  4f, slGamma.valueTo)
 
-        val message2 = "\"slider gamma\" should have proper stepSize attribute"
-        assertEquals(message2, slGamma.stepSize, 0.2f)
-
-        val message3 = "\"slider gamma\" should have proper valueFrom attribute"
-        assertEquals(message3, slGamma.valueFrom, 0.2f)
-
-        val message4 = "\"slider gamma\" should have proper valueTo attribute"
-        assertEquals(message4, slGamma.valueTo, 4f)
-
-        val message5 = "\"slider gamma\" should have proper initial value"
-        assertEquals(message5, slGamma.value, 1f)
+        val message5 = "\"slGamma\" should have proper initial value"
+        assertEquals(message5,  1f, slGamma.value)
     }
 
     @Test
     fun testShouldCheckSliderNotCrashingByDefault() {
-        val slSaturation = activity.findViewById<Slider>(R.id.slSaturation)
-        val ivPhoto = activity.findViewById<ImageView>(R.id.ivPhoto)
         slSaturation.value += slSaturation.stepSize
-        val bitmap = (ivPhoto.getDrawable() as BitmapDrawable).bitmap
-        val message2 = "is \"ivPhoto\" not empty and no crash occurs while swiping slider?"
-        assertNotNull(message2, bitmap)
-        slSaturation.value -= slSaturation.stepSize
+        slGamma.value += slGamma.stepSize
+        shadowLooper.runToEndOfTasks()
+        (ivPhoto.drawable as BitmapDrawable?)?.bitmap ?: throw AssertionError(messageNullAfterFilters)
     }
 
     @Test
     fun testShouldCheckDefaultBitmapEdit() {
-        val slBrightness = activity.findViewById<Slider>(R.id.slBrightness)
-        val slContrast = activity.findViewById<Slider>(R.id.slContrast)
-        val slSaturation = activity.findViewById<Slider>(R.id.slSaturation)
-        val slGamma = activity.findViewById<Slider>(R.id.slGamma)
-        val ivPhoto = activity.findViewById<ImageView>(R.id.ivPhoto)
-        var img0 = (ivPhoto.getDrawable() as BitmapDrawable).bitmap
-        var RGB0 = img0?.let { singleColor(it,80, 90) }
+        (ivPhoto.drawable as BitmapDrawable?)?.bitmap ?: throw AssertionError(messageNullInitialImage)
+        val expectedRgb = Triple(110, 244, 255)
 
-        runBlocking() {
-            slBrightness.value += slBrightness.stepSize
-            slContrast.value += slContrast.stepSize * 4
-            slContrast.value += slContrast.stepSize
-            slSaturation.value += slSaturation.stepSize * 10
-            slSaturation.value += slSaturation.stepSize * 5
-            slGamma.value -= slGamma.stepSize * 2
+        slBrightness.value += slBrightness.stepSize
+        slContrast.value += slContrast.stepSize * 4
+        slContrast.value += slContrast.stepSize
+        slSaturation.value += slSaturation.stepSize * 10
+        slSaturation.value += slSaturation.stepSize * 5
+        slGamma.value -= slGamma.stepSize * 2
 
-            Shadows.shadowOf(Looper.getMainLooper()).idle()
-            Thread.sleep(200)
-            Shadows.shadowOf(Looper.getMainLooper()).idle()
-        }
+        shadowLooper.runToEndOfTasks()
+        Thread.sleep(200)
+        shadowLooper.runToEndOfTasks()
 
-        val img2 = (ivPhoto.getDrawable() as BitmapDrawable).bitmap
-        val RGB2 = singleColor(img2, 60, 70)
-        val message2 = "val0 ${RGB0} val2 ${RGB2}"
-        if (RGB0 != null) {
-            assertTrue(message2,Math.abs(110-RGB2.first) <= marginError)
-            assertTrue(message2,Math.abs(244-RGB2.second) <= marginError)
-            assertTrue(message2,Math.abs(255-RGB2.third) <= marginError)
-        }
+        val actualImage = (ivPhoto.drawable as BitmapDrawable?)?.bitmap ?: throw AssertionError(messageNullAfterFilters)
+        val actualRgb = singleColor(actualImage, 70, 60)
+        assertColorsValues(messageWrongValues, expectedRgb, actualRgb, marginError)
     }
 
     @Test
     fun testShouldCheckDefaultBitmapEdit2() {
-        val slBrightness = activity.findViewById<Slider>(R.id.slBrightness)
-        val slContrast = activity.findViewById<Slider>(R.id.slContrast)
-        val slSaturation = activity.findViewById<Slider>(R.id.slSaturation)
-        val ivPhoto = activity.findViewById<ImageView>(R.id.ivPhoto)
-        val slGamma = activity.findViewById<Slider>(R.id.slGamma)
-        var img0 = (ivPhoto.getDrawable() as BitmapDrawable).bitmap
-        var RGB0 = img0?.let { singleColor(it, 80, 90) }
+        (ivPhoto.drawable as BitmapDrawable?)?.bitmap ?: throw AssertionError(messageNullInitialImage)
+        val expectedRgb = Triple(79, 131, 195)
 
-        runBlocking() {
-            slGamma.value += slGamma.stepSize * 5
-            slSaturation.value += slSaturation.stepSize * 5
-            slBrightness.value += slBrightness.stepSize
-            slBrightness.value += slBrightness.stepSize
-            slContrast.value -= slContrast.stepSize
+        slGamma.value += slGamma.stepSize * 5
+        slSaturation.value += slSaturation.stepSize * 5
+        slBrightness.value += slBrightness.stepSize
+        slContrast.value -= slContrast.stepSize
+        slBrightness.value += slBrightness.stepSize
 
-            Shadows.shadowOf(Looper.getMainLooper()).idle()
-            Thread.sleep(200)
-            Shadows.shadowOf(Looper.getMainLooper()).idle()
-        }
+        shadowLooper.runToEndOfTasks()
+        Thread.sleep(200)
+        shadowLooper.runToEndOfTasks()
 
-        val img2 = (ivPhoto.getDrawable() as BitmapDrawable).bitmap
-        val RGB2 = singleColor(img2, 80, 90)
-        val message2 = "val0 ${RGB0} val2 ${RGB2}"
-        if (RGB0 != null) {
-            assertTrue(message2,Math.abs(79-RGB2.first) <= marginError)
-            assertTrue(message2,Math.abs(131-RGB2.second) <= marginError)
-            assertTrue(message2,Math.abs(195-RGB2.third) <= marginError)
-        }
+        val actualImage = (ivPhoto.drawable as BitmapDrawable?)?.bitmap ?: throw AssertionError(messageNullAfterFilters)
+        val actualRgb = singleColor(actualImage, 90, 80)
+        assertColorsValues(messageWrongValues, expectedRgb, actualRgb, marginError)
     }
 
-    fun singleColor(source: Bitmap, x0:Int, y0:Int): Triple<Int, Int, Int> {
-        val width = source.width
-        val height = source.height
-        val pixels = IntArray(width * height)
-        // get pixel array from source
-        source.getPixels(pixels, 0, width, 0, 0, width, height)
+    private fun singleColor(source: Bitmap, x:Int = 70, y:Int = 60): Triple<Int, Int, Int> {
+        val pixel = source.getPixel(x, y)
 
-        var index: Int
-        var R: Int
-        var G: Int
-        var B: Int
-        var y = x0
-        var x = y0
+        val red = Color.red(pixel)
+        val green = Color.green(pixel)
+        val blue = Color.blue(pixel)
 
-        index = y * width + x
-        // get color
-        R = Color.red(pixels[index])
-        G = Color.green(pixels[index])
-        B = Color.blue(pixels[index])
-
-        return  Triple(R,G,B)
+        return  Triple(red,green,blue)
     }
 
     fun createBitmap(): Bitmap {
