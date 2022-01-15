@@ -83,7 +83,8 @@ class Stage5UnitTest {
     @Test
     fun testShouldCheckDefaultBitmapEdit() {
         (ivPhoto.drawable as BitmapDrawable?)?.bitmap ?: throw AssertionError(messageNullInitialImage)
-        val expectedRgb = Triple(110, 244, 255)
+        val expectedRgb = Triple(46, 212, 249)
+
 
         slBrightness.value += slBrightness.stepSize
         slContrast.value += slContrast.stepSize * 4
@@ -104,7 +105,7 @@ class Stage5UnitTest {
     @Test
     fun testShouldCheckDefaultBitmapEdit2() {
         (ivPhoto.drawable as BitmapDrawable?)?.bitmap ?: throw AssertionError(messageNullInitialImage)
-        val expectedRgb = Triple(79, 131, 195)
+        val expectedRgb = Triple(70, 121, 182)
 
         slGamma.value += slGamma.stepSize * 5
         slSaturation.value += slSaturation.stepSize * 5
