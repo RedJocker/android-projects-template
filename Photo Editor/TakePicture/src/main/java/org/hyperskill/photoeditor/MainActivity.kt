@@ -1,15 +1,15 @@
 package org.hyperskill.photoeditor
 
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.Color
+import android.graphics.drawable.BitmapDrawable
 import android.os.Bundle
 import android.provider.MediaStore
-import android.view.View
+import android.widget.Button
 import android.widget.ImageView
-import androidx.activity.result.ActivityResult
-import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts.StartActivityForResult
 import androidx.appcompat.app.AppCompatActivity
 
@@ -17,13 +17,43 @@ import androidx.appcompat.app.AppCompatActivity
 class MainActivity : AppCompatActivity() {
 
     private lateinit var currentImage: ImageView
+
+    private val galleryButton: Button by lazy {
+        findViewById<Button>(R.id.btnGallery)  // renaming btnGallery should produce "View with id "btnGallery" was not found" obs: use refactor->rename (fn + shift + f6)
+//            .also { it.text = "wrongText" }    // uncommenting should produce "Wrong text for btnGallery expected:<[GALLERY]> but was:<[WRONGTEXT]>"
+    }
+
+
+    private val registerForActivityResult =
+        registerForActivityResult(StartActivityForResult()) { result ->
+            if (result.resultCode == Activity.RESULT_OK) {
+                val uri = result.data?.data ?: return@registerForActivityResult
+                currentImage.setImageURI(uri)
+//                currentImage.setImageBitmap(null)                        //  should produce "ivPhoto drawable was null"
+            }
+        }
+
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         bindViews()
+        setListener()
 
         //do not change this line
-        currentImage.setImageBitmap(createBitmap())
+        currentImage.setImageBitmap(createBitmap())      // commenting out this line should produce "is "ivPhoto" not empty?"
+        //
+    }
+
+
+    private fun setListener() {
+        galleryButton.setOnClickListener { view ->
+            val intent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
+            //val intent = Intent(Intent.ACTION_CHOOSER, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)   // changing above line to this should produce "Intent found was different from expected"
+
+            registerForActivityResult.launch(intent)    // commenting this line should produce "No intent was found by tests. Have you launched an intent?"
+        }
     }
 
     private fun bindViews() {
