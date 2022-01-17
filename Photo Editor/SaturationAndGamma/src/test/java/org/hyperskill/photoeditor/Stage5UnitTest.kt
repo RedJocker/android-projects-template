@@ -43,7 +43,7 @@ class Stage5UnitTest {
     private val shadowLooper: ShadowLooper by lazy { Shadows.shadowOf(Looper.getMainLooper()) }
 
     @Test
-    fun testShouldCheckSliderExist() {
+    fun testShouldCheckSaturationSliderExist() {
         val message2 = "\"slSaturation\" should have proper stepSize attribute"
         assertEquals(message2,  10f, slSaturation.stepSize)
 
@@ -81,9 +81,76 @@ class Stage5UnitTest {
     }
 
     @Test
+    fun testShouldCheckHighBrightnessValue() {
+        (ivPhoto.drawable as BitmapDrawable?)?.bitmap ?: throw AssertionError(messageNullInitialImage)
+        val expectedRgb = Triple(230, 255, 255)
+        slBrightness.value += 120
+
+        shadowLooper.runToEndOfTasks()
+        Thread.sleep(200)
+        shadowLooper.runToEndOfTasks()
+
+        val actualImage = (ivPhoto.drawable as BitmapDrawable?)?.bitmap ?: throw AssertionError(messageNullAfterFilters)
+        val actualRgb = singleColor(actualImage, 70, 60)
+        assertColorsValues(messageWrongValues, expectedRgb, actualRgb, marginError)
+    }
+
+    @Test
+    fun testShouldCheckSomeContrastValue() {
+        (ivPhoto.drawable as BitmapDrawable?)?.bitmap ?: throw AssertionError(messageNullInitialImage)
+        val expectedRgb = Triple(85, 154, 177)
+
+        slContrast.value += 100
+
+        shadowLooper.runToEndOfTasks()
+        Thread.sleep(200)
+        shadowLooper.runToEndOfTasks()
+
+        val actualImage = (ivPhoto.drawable as BitmapDrawable?)?.bitmap ?: throw AssertionError(messageNullAfterFilters)
+        val actualRgb = singleColor(actualImage, 70, 60)
+        assertColorsValues(messageWrongValues, expectedRgb, actualRgb, marginError)
+    }
+
+    @Test
+    fun testShouldCheckSomeSaturationValue() {
+        (ivPhoto.drawable as BitmapDrawable?)?.bitmap ?: throw AssertionError(messageNullInitialImage)
+        val expectedRgb = Triple(88, 146, 165)
+
+
+        slSaturation.value += 80
+
+        shadowLooper.runToEndOfTasks()
+        Thread.sleep(200)
+        shadowLooper.runToEndOfTasks()
+
+        val actualImage = (ivPhoto.drawable as BitmapDrawable?)?.bitmap ?: throw AssertionError(messageNullAfterFilters)
+        val actualRgb = singleColor(actualImage, 70, 60)
+        assertColorsValues(messageWrongValues, expectedRgb, actualRgb, marginError)
+    }
+
+    @Test
+    fun testShouldCheckSomeGammaValue() {
+        (ivPhoto.drawable as BitmapDrawable?)?.bitmap ?: throw AssertionError(messageNullInitialImage)
+        val expectedRgb = Triple(56, 86, 98)
+
+
+
+        slGamma.value += 4 * slGamma.stepSize
+
+        shadowLooper.runToEndOfTasks()
+        Thread.sleep(200)
+        shadowLooper.runToEndOfTasks()
+
+        val actualImage = (ivPhoto.drawable as BitmapDrawable?)?.bitmap ?: throw AssertionError(messageNullAfterFilters)
+        val actualRgb = singleColor(actualImage, 70, 60)
+        assertColorsValues(messageWrongValues, expectedRgb, actualRgb, marginError)
+    }
+
+
+    @Test
     fun testShouldCheckDefaultBitmapEdit() {
         (ivPhoto.drawable as BitmapDrawable?)?.bitmap ?: throw AssertionError(messageNullInitialImage)
-        val expectedRgb = Triple(46, 212, 249)
+        val expectedRgb = Triple(36, 208, 246)
 
 
         slBrightness.value += slBrightness.stepSize
@@ -105,7 +172,7 @@ class Stage5UnitTest {
     @Test
     fun testShouldCheckDefaultBitmapEdit2() {
         (ivPhoto.drawable as BitmapDrawable?)?.bitmap ?: throw AssertionError(messageNullInitialImage)
-        val expectedRgb = Triple(70, 121, 182)
+        val expectedRgb = Triple(71, 122, 186)
 
         slGamma.value += slGamma.stepSize * 5
         slSaturation.value += slSaturation.stepSize * 5
