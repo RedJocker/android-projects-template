@@ -77,11 +77,9 @@ class MainActivity : AppCompatActivity() {
         saveButton.setOnClickListener { _ ->
 
             if(hasPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
-                val bitmap = (currentImage.drawable as BitmapDrawable).bitmap
+                val bitmap = ((currentImage.drawable as BitmapDrawable?)?.bitmap ?: return@setOnClickListener)
 //                                                                    .scale(30,30)  // produce "content://media/external/images/media/1 expected:<200> but was:<30>"
-
                 val values = ContentValues()
-
                 values.put(Images.Media.DATE_TAKEN, System.currentTimeMillis())
                 values.put(Images.Media.MIME_TYPE, "image/jpeg")
                 values.put(Images.ImageColumns.WIDTH, bitmap.width)
@@ -150,6 +148,26 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        grantResults.forEachIndexed { index: Int, result: Int ->
+            if (result == PackageManager.PERMISSION_GRANTED) {
+                Log.d("PermissionRequest", "${permissions[index]} granted")
+                if(permissions[index] == Manifest.permission.READ_EXTERNAL_STORAGE) {
+                    galleryButton.callOnClick()
+                } else if(permissions[index] == Manifest.permission.WRITE_EXTERNAL_STORAGE) {
+                    saveButton.callOnClick()
+                }
+            } else {
+                Log.d("PermissionRequest", "${permissions[index]} denied")
+            }
+        }
+    }
+
 
     @ColorInt
     private fun Bitmap.brightenPixel(x : Int, y: Int, value: Int) : Int {
@@ -172,25 +190,7 @@ class MainActivity : AppCompatActivity() {
         return Color.rgb(red, green, blue)
     }
 
-    override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<out String>,
-        grantResults: IntArray
-    ) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        grantResults.forEachIndexed { index: Int, result: Int ->
-            if (result == PackageManager.PERMISSION_GRANTED) {
-                Log.d("PermissionRequest", "${permissions[index]} granted")
-                if(permissions[index] == Manifest.permission.READ_EXTERNAL_STORAGE) {
-                    galleryButton.callOnClick()
-                } else if(permissions[index] == Manifest.permission.WRITE_EXTERNAL_STORAGE) {
-                    saveButton.callOnClick()
-                }
-            } else {
-                Log.d("PermissionRequest", "${permissions[index]} denied")
-            }
-        }
-    }
+
 
     // do not change this function
     fun createBitmap(): Bitmap {
