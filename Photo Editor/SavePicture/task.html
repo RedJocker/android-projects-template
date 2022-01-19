@@ -1,36 +1,119 @@
 <h2>Description</h2>
 
-<p>In this stage, we will save our edited photo - <strong>the save button</strong>&nbsp;comes into play.<br />
-The user should be able to&nbsp;save loaded photo,&nbsp;&nbsp;so that it will appear in the gallery folder.</p>
+<p>
+	In this stage, we will save our edited photo - the save button&nbsp;comes into play.<br />
+	The user should be able to&nbsp;save loaded photo,&nbsp;&nbsp;so that it will appear in the gallery folder.
+</p>
+
+<p>
+	To be able to save content permission to write to external storage will be required.
+</p>
+
+<br/>
 
 <h2>Objectives</h2>
 
-<p>Add the following components to the application layout:</p>
-
 <ol>
-	<li><code>Button</code>&nbsp;for saving your photo with&nbsp;the&nbsp;<code>id</code>&nbsp;attribute <code>btnSave</code></li>
+	<li>
+		Add a <code>Button</code>&nbsp;for saving your photo with&nbsp;the&nbsp;<code>id</code>
+		attribute <code>btnSave</code>.
+	</li>
+
+	<li>
+		Declare the required permissions on AndroidManifest.xml
+	</li>
+
+	<li>
+		<p>Add a proper onClick method to&nbsp;<code>btnSave</code>. This method should save the
+			current photo to <code>MediaStore.Images.Media.EXTERNAL_CONTENT_URI</code> folder in
+			JPEG format.</p>
+	</li>
+
+	<li>
+		Before actually saving content check if you have permission <code>Manifest.permission.WRITE_EXTERNAL_STORAGE</code>.<br/>
+		If you don't have permission request the permission first.
+	</li>
+
+	<li>
+		Override the method <code>onRequestPermissionsResult</code> to check if
+		the permission was granted. If it was you should continue the saving procedure,
+		you might want to use <code>saveButton.callOnClick()</code> for that.
+	</li>
+
+	<li>
+		For api versions before <code> Build.VERSION_CODES.M </code>
+		permissions were given on installation. So there is no need, nor a way, for requesting run time
+		permissions for those.
+		If you still want to make the code that check permissions compatible you can check
+		the hint section after the examples
+	</li>
 </ol>
 
-<p>&nbsp;</p>
 
-<p>Then you need to add a proper onClick method to&nbsp;<code>btnSave</code>&nbsp;. This method should save the current photo to the&nbsp; &quot;/Pictures&quot; folder in<br />
-Android default format/JPEG format.&nbsp;</p>
+<h3> External references </h3>
+<p>
+	On the requesting permission subject you can check this
+	<a href="https://www.geeksforgeeks.org/android-how-to-request-permissions-in-android-application/">
+		text reference
+	</a> or if you prefer there is also this
+	<a href="https://www.youtube.com/watch?v=S4jkcRhembY"> video reference </a>
+</p>
 
-<p>Basically what main test check is if <code>btnSave</code>&nbsp; saves some file in &quot;folder&quot;:</p>
-
-<pre>
-<code>MediaStore.Images.Media.EXTERNAL_CONTENT_URI</code></pre>
-
-<p>if there is a file it&#39;s check it&#39;s bitmap.</p>
-
+<br/>
 <h2>Examples</h2>
 
-<p>&nbsp;</p>
 
 <p><img alt="" height="520" name="p_3_1.png" src="https://ucarecdn.com/562aaf6f-b5ae-4a92-a1e7-de7023dd8a7c/" width="270" /></p>
 
 <p><img alt="" height="132" name="p_3_2.png" src="https://ucarecdn.com/382b7886-3c89-4720-8fb3-82be5d5e14d2/" width="245" /></p>
 
-<p>&nbsp;</p>
 
 <p><img alt="" height="151" name="p_3_3.png" src="https://ucarecdn.com/c58be6ec-8e89-4582-9a39-11252bf21876/" width="165" /></p>
+
+
+
+<br/>
+
+<h2>Hints</h2>
+
+<details>
+	<summary>
+		To check if permissions were given you may use something like this:<br/><br/>
+	</summary>
+
+	<pre><code lang="kotlin">private fun hasPermission(manifestPermission: String): Boolean {
+  return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+    this.checkSelfPermission(manifestPermission) == PackageManager.PERMISSION_GRANTED
+  } else {
+    PermissionChecker.checkSelfPermission(this, manifestPermission) == PermissionChecker.PERMISSION_GRANTED
+  }
+}</code></pre>
+</details>
+<br>
+<details>
+	<summary>
+		To save to external storage you might want use something similar to this adapted
+		to your code base:<br/><br/>
+	</summary>
+
+	<pre><code lang="kotlin">saveButton.setOnClickListener { _ ->
+  if ( /* check if has permission */ ) {
+
+	val bitmap: Bitmap = /* image you want to save */
+	val values = ContentValues()
+	values.put(Images.Media.DATE_TAKEN, System.currentTimeMillis())
+	values.put(Images.Media.MIME_TYPE, "image/jpeg")
+	values.put(Images.ImageColumns.WIDTH, bitmap.width)
+	values.put(Images.ImageColumns.HEIGHT, bitmap.height)
+
+	val uri = this@MainActivity.contentResolver.insert(
+	  Images.Media.EXTERNAL_CONTENT_URI, values
+	) ?: return@setOnClickListener
+
+	val openOutputStream = contentResolver.openOutputStream(uri)
+	bitmap.compress(Bitmap.CompressFormat.JPEG, 100, openOutputStream)
+  } else {
+	/* request permission */
+  }
+}</code></pre>
+</details>
