@@ -81,7 +81,7 @@ class Stage2UnitTest {
 
         val actualBitmap = (ivPhoto.drawable as BitmapDrawable?)?.bitmap ?: throw AssertionError(messageNullImage)
         val expectedBitmap = createBitmap()
-        assertEquals(message, singleColor(actualBitmap), singleColor(expectedBitmap))
+        assertEquals(message, singleColor(expectedBitmap), singleColor(actualBitmap))
         assertEquals(message, expectedBitmap.width, actualBitmap.width)
         assertEquals(message, expectedBitmap.height, actualBitmap.height,)
     }
