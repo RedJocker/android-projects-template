@@ -1,31 +1,139 @@
 <h2>Description</h2>
 
-<p>In this stage, we will make use of one of Kotlin's most prominent features  - <strong>coroutines</strong>.<br>
-Applying filters should no longer freeze UI, it should be done in the background.</p>
+	<p>
+		If you have tried testing our app manually with a medium sized image loaded from gallery
+		(remember, you can make images on your emulated device by using the camera app the device has),
+		you probably have noticed that it takes some time to apply the filter and while the app is
+		doing the work it become unresponsive to interaction with UI components.
+	</p>
+	<p>
+		In this stage, we will make use of one of Kotlin's most prominent features <strong>coroutines</strong>.
+		Applying filters should no longer freeze UI, it should be done in the background.
+	</p>
 
+<br/>
 <h2>Objectives</h2>
 
-<p>Make sure you have the following dependencies added to the build.gradle file</p>
 
-<ol>
-	<li><code>implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.3.9")</code></li>
-</ol>
+	<ol>
+		<li>Make sure you have the following dependencies added to the build.gradle file<br/>
+			<code>implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.3.9")</code>
+		</li>
+		<li>
+			Apply your filter function asynchronously through the use of coroutines<br>
+		</li>
+		<li>
+			Don't use the <code>Dispatchers.Main</code> for computations,
+			you can use <code>Dispatchers.Default</code> instead
+		</li>
+		<li>
+			View updates should be done on <code>Dispatchers.Main</code>.
+			You may use the <code> runOnUiThread { /* your code to update views */ } </code>
+			for making this context switch easily
+		</li>
 
-<p>Then you need to invoke your filter applier function asynchronously through for example <strong>CoroutineScope.</strong><br>
-Also there won't be any tests with big images, but if you want your app not to go out of memory very quickly with let's say 3264x2248 pictures then you must also implement proper scale down function to like 1224 width, 1632 height while maintaining picture aspect ratio.</p>
+		<li>
+			Our goal is to make the app responsive while the filter job computations is being processed.
+			You don't have to try to make the computations itself faster
+		</li>
+		<li>
+			If a job computation that is scheduled to be processed becomes irrelevant
+			(when slider values change before the calculations) it would be a good thing to cancel
+			that computation.
+		</li>
 
-<p>The tests depend on the start bitmap so it's not necessary to do this.</p>
+	</ol>
 
-<p>The difference coroutines make in this app will start to be  noticeable on medium size pictures</p>
 
+<h3> External references</h3>
+	<p>
+		To become familiar with the subject of coroutines you may use this
+		<a href="https://blog.mindorks.com/mastering-kotlin-coroutines-in-android-step-by-step-guide">
+			text reference
+		</a>
+	</p>
+
+	<p>
+		You may also watch the initial videos from this playlist as
+		<a href="https://www.youtube.com/watch?v=ShNhJ3wMpvQ&list=PLQkwcJG4YTCQcFEPuYGuv54nYai_lwil_">
+			video reference
+		</a>
+	</p>
+
+	<p>
+		Even with these references you may still fell overwhelmed by all of this new information if
+		you are not familiar with the subject.
+		Some code hints will be provided after the example images.
+		But it is strongly recommended to try for yourself first before checking those.
+	</p>
+
+
+
+
+<br/>
 <h2>Examples</h2>
 
-<p>App should not be lagging at all, regardless of image size, while swiping sliders.</p>
+	<p>Before: (slider value text lags while swiping slider)</p>
 
-<p>Before: (slider value text lags while swiping slider)</p>
+	<p><img alt="" height="520" name="image.png" src="https://ucarecdn.com/5caf999c-dc3d-4e50-96cc-3afb414f0b2c/" width="270"></p>
 
-<p><img alt="" height="520" name="image.png" src="https://ucarecdn.com/5caf999c-dc3d-4e50-96cc-3afb414f0b2c/" width="270"></p>
+	<p>After: (slider value doesn't lag while swiping slider)</p>
 
-<p>After: (slider value doesn't lag while swiping slider)</p>
+	<p><img alt="" height="520" name="image.png" src="https://ucarecdn.com/dd689b01-0aa1-4379-983f-9d54f4dfe5de/" width="270"></p>
 
-<p><img alt="" height="520" name="image.png" src="https://ucarecdn.com/dd689b01-0aa1-4379-983f-9d54f4dfe5de/" width="270"></p>
+
+
+<br/>
+<h2>Hints</h2>
+
+<details>
+	<summary>
+		To make use of coroutines you can get inspired by this code below and change
+		it as your codebase needs (this is better viewed on JetBrains Academy since the code is wide)<br/><br/>
+	</summary>
+
+	<pre><code lang="kotlin">
+private var lastJob: Job? = null  //field to keep track of last job in case we wish to cancel it
+
+/* other fields and other methods from MainActivity */
+
+private fun onSliderChanges(slider: Slider, sliderValue: Float, fromUser: Boolean) {
+
+  lastJob?.cancel()  // we don't need lastJob computations anymore. If it was already computed nothing happens.
+
+  lastJob = GlobalScope.launch(Dispatchers.Default) {
+    //  the execution inside this block is already asynchronous as you can see by the print below
+
+    //  I/System.out: onSliderChanges job making calculations running on thread DefaultDispatcher-worker-1
+    println("onSliderChanges " + "job making calculations running on thread ${Thread.currentThread().name}")
+
+    // if the current image is null we have nothing to do and just get out
+    val bitmap = currentOriginalImageDrawable?.bitmap ?: return@launch
+
+    // if you need to make some computations and wait for result you can use the async block
+    // it will schedule a new coroutine task and return a Deferred object that will have the
+    // returned value
+    val brightenCopyDeferred: Deferred&lt;Bitmap&gt; = this.async {
+      /* invoke your computation that returns a value */
+      /* making some brightness calculations */
+    }
+    // here we wait for the result
+    val brightenCopy: Bitmap = brightenCopyDeferred.await()
+
+
+    // but since you are already on a worker thread you don't have to use async block
+    val contrastedCopy = /* invoke computations for contrast filter */
+
+    /* do more calculations */
+
+    // to make view updates we need to change the thread context to be the main thread
+    runOnUiThread {
+      // here we are already on main thread as you can see on the println below
+      //  I/System.out: onSliderChanges job updating view running on thread main
+      println("onSliderChanges " + "job updating view running on thread ${Thread.currentThread().name}")
+      currentImage.setImageBitmap(/* your new value */)
+    }
+  }
+}</code></pre>
+</details>
+<br>
