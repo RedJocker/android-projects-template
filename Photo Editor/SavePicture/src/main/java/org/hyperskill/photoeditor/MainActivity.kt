@@ -8,6 +8,7 @@ import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.Color
 import android.graphics.drawable.BitmapDrawable
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.MediaStore
@@ -78,7 +79,7 @@ class MainActivity : AppCompatActivity() {
 
             if(hasPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
                 val bitmap = ((currentImage.drawable as BitmapDrawable?)?.bitmap ?: return@setOnClickListener)
-//                                                                    .scale(30,30)  // produce "content://media/external/images/media/1 expected:<200> but was:<30>"
+//                                                                    .scale(30,30)  // produce "image loaded from content://media/external/images/media/1 had wrong width expected:<200> but was:<30>"
                 val values = ContentValues()
                 values.put(Images.Media.DATE_TAKEN, System.currentTimeMillis())
                 values.put(Images.Media.MIME_TYPE, "image/jpeg")
@@ -89,9 +90,9 @@ class MainActivity : AppCompatActivity() {
                     Images.Media.EXTERNAL_CONTENT_URI, values
                 ) ?: return@setOnClickListener
 
-    //            val uri = this@MainActivity.contentResolver.insert(
-    //                Uri.parse(Images.Media.EXTERNAL_CONTENT_URI.toString() + "/1"), values
-    //            ) ?: return@setOnClickListener                                     // produce "content://media/external/images/media/1 expected:<200> but was:<100>"
+//                val uri = this@MainActivity.contentResolver.insert(
+//                    Uri.parse(Images.Media.EXTERNAL_CONTENT_URI.toString() + "/1"), values
+//                ) ?: return@setOnClickListener                                     // produce "image loaded from content://media/external/images/media/1 had wrong width expected:<200> but was:<100>"
 
                 val openOutputStream = contentResolver.openOutputStream(uri)
                 bitmap.compress(Bitmap.CompressFormat.JPEG, 100, openOutputStream)
