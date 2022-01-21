@@ -43,9 +43,6 @@ class Stage4UnitTest {
 
     @Test
     fun testShouldCheckSliderExist() {
-        val message = "does view with id \"slContrast\" placed in activity?"
-        assertNotNull(message, slContrast)
-
         val message2 = "\"slider contrast\" should have proper stepSize attribute"
         assertEquals(message2, 10f, slContrast.stepSize)
 
@@ -61,11 +58,10 @@ class Stage4UnitTest {
 
     @Test
     fun testShouldCheckSliderNotCrashingByDefault() {
+        (ivPhoto.drawable as BitmapDrawable?)?.bitmap ?: AssertionError(messageNullInitialImage)
         slContrast.value += slContrast.stepSize
-        val bitmap = (ivPhoto.drawable as BitmapDrawable).bitmap
-        val message2 = "is \"ivPhoto\" not empty and no crash occurs while swiping slider?"
-        assertNotNull(message2, bitmap)
-        slContrast.value -= slContrast.stepSize
+        shadowLooper.runToEndOfTasks()
+        (ivPhoto.drawable as BitmapDrawable?)?.bitmap ?: AssertionError(messageNullAfterFilters)
     }
 
     @Test
