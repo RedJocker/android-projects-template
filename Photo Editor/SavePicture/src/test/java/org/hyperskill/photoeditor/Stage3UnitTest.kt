@@ -53,8 +53,9 @@ class Stage3UnitTest {
 
     @Test
     fun testShouldCheckSomeNewBitmapIsCreated() {
+
         shadowActivity.grantPermissions(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-        val bitmapExpected = (ivPhoto.drawable as BitmapDrawable).bitmap
+        val bitmapExpected = (ivPhoto.drawable as BitmapDrawable?)?.bitmap
             ?: throw AssertionError(messageNullInitialImage)
         val contentResolver = activity.contentResolver
         val output = ByteArrayOutputStream()
@@ -62,16 +63,20 @@ class Stage3UnitTest {
         val uri = Uri.parse(MediaStore.Images.Media.EXTERNAL_CONTENT_URI.toString() + "/1").also{
             shadowLooper.runToEndOfTasks()
         } ?: throw AssertionError("Test failed to parse Uri")
-        val message2 = uri.toString()
+        val messageError = "image loaded from $uri had wrong"
+
         shadowContentResolver.registerOutputStream(uri, output)
         btnSave.performClick()
+        shadowLooper.runToEndOfTasks()
         shadowContentResolver.registerInputStream(uri, ByteArrayInputStream(output.toByteArray()))
         shadowLooper.runToEndOfTasks()
+
         val bitmapActual = contentResolver.openInputStream(uri).use(BitmapFactory::decodeStream)
             ?: throw AssertionError("Test failed to decode bitmap")
         shadowLooper.runToEndOfTasks()
-        assertEquals(message2, bitmapExpected.width, bitmapActual.width)
-        assertEquals(message2, bitmapExpected.height, bitmapActual.height)
+
+        assertEquals("$messageError width", bitmapExpected.width, bitmapActual.width)
+        assertEquals("$messageError height", bitmapExpected.height, bitmapActual.height)
     }
 
 
@@ -101,7 +106,7 @@ class Stage3UnitTest {
         Thread.sleep(200)
         shadowLooper.runToEndOfTasks()
 
-        val actualImage1 = (ivPhoto.drawable as BitmapDrawable).bitmap ?: throw AssertionError(messageNullAfterSlBrightness)
+        val actualImage1 = (ivPhoto.drawable as BitmapDrawable?)?.bitmap ?: throw AssertionError(messageNullAfterSlBrightness)
         val actualRgb1 = singleColor(actualImage1)
         assertColorsValues(messageWrongValues, expectedRgb1, actualRgb1, marginError)
 
@@ -111,7 +116,7 @@ class Stage3UnitTest {
         Thread.sleep(200)
         shadowLooper.runToEndOfTasks()
 
-        val actualImage2 = (ivPhoto.drawable as BitmapDrawable).bitmap ?: throw AssertionError(messageNullAfterSlBrightness)
+        val actualImage2 = (ivPhoto.drawable as BitmapDrawable?)?.bitmap ?: throw AssertionError(messageNullAfterSlBrightness)
         val actualRgb2 = singleColor(actualImage2)
         assertColorsValues(messageWrongValues, expectedRgb2, actualRgb2, marginError)
     }
