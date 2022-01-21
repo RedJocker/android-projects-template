@@ -1,25 +1,46 @@
 <h2>Description</h2>
 
-<p>In this stage, we will implement our first filter - <strong>brightness filter</strong>.<br />
-Image <strong>brightness</strong> is simply the average RGB value - (R+G+B)/3<br />
-To increase/decrease it simply add/subtract the same amount from each rgb color.<br />
-We will regulate image&nbsp;<strong>brightness&nbsp;</strong>with a slider.</p>
+<p>
+	In this stage, we will implement our first filter - <strong>brightness filter</strong>.<br/>
+	Image <strong>brightness</strong> is simply the average RGB value <code>(red + green + blue) / 3</code><br/>
+	To increase/decrease it simply add/subtract the same amount from each rgb color.<br/>
+	We will regulate image&nbsp;<strong>brightness&nbsp;</strong>with a slider.
+</p>
 
 <h2>Objectives</h2>
 
-<p>Add the following components to the application layout:</p>
-
 <ol>
-	<li><code>Slider</code>&nbsp;widget for specifying the photo brightness&nbsp;with the&nbsp;<code>id</code>&nbsp;attribute&nbsp;<code>slBrightness</code>; the values range from -250&nbsp;to 250&nbsp;with the step size 10&nbsp;and initial value 0</li>
+	<li>
+		Add a <code>Slider</code>&nbsp;widget for specifying the photo brightness&nbsp;with
+		the&nbsp;<code>id</code>&nbsp;attribute&nbsp;<code>slBrightness</code>;
+		the values range from -250&nbsp;to 250&nbsp;with the step size 10&nbsp;and initial value 0
+	</li>
+	<li>
+		Attach onChangeListener to this slider, that will apply&nbsp;<strong>brightness filter</strong>.
+	</li>
+	<li>
+		<strong>The Brightness filter</strong> should simply add the current value of
+		<strong>brightnessSlider</strong> to each RGB value of the default photo bitmap
+		and check whether the new value is in the correct boundaries (0,255).
+	</li>
+	<li>
+		Remember that every time a user loads a new image you must save it&#39;s default
+		<code>Bitmap</code>&nbsp;and operate on it while applying a brightness filter
+		(not on current <code>Bitmap</code>, because filter will erase image details).
+	</li>
+	<li>
+		Lastly, tests allow some margin error because of possible differences that may
+		occur due to rounding numbers, but try to use Integers as much as possible,
+		otherwise use Double (won&#39;t be needed in this stage though).
+	</li>
 </ol>
-
-<p>Then&nbsp;attach onChangeListener to this slider, that will apply&nbsp;<strong>brightness filter</strong>.<br />
-<strong>The Brightness filter&nbsp;</strong>should simply add the current value of&nbsp;<strong>brightnessSlider&nbsp;</strong>to each RGB value of the default photo bitmap<strong>&nbsp;</strong>and check whether the new value is in the correct boundaries (0,255)<strong>.</strong><br />
-Remember that every time a user loads a new image you must save it&#39;s default&nbsp;<code>Bitmap</code>&nbsp;and operate on it while applying a brightness filter (not on current <code>Bitmap</code>, because filter will erase image details).<br />
-Lastly, tests allow some margin error because of possible differences that may occur due to rounding numbers, but try to use Integers as much as possible, otherwise use Double (won&#39;t be needed in this stage though).</p>
 
 <h2>Examples</h2>
 
-<p><img alt="" height="520" name="p_2_1.png" src="https://ucarecdn.com/53488376-e1bd-4228-8f51-11eba3417b78/" width="270" /></p>
+<p><img height="520" width="270" name="p_2_1.png"
+		alt="Example of application view where the brightness has a low value"
+		src="https://ucarecdn.com/53488376-e1bd-4228-8f51-11eba3417b78/" /></p>
 
-<p><img alt="" height="520" name="p_2_2.png" src="https://ucarecdn.com/43ed6152-275f-411a-a9db-eba8dc6d859d/" width="270" /></p>
+<p><img height="520" width="270" name="p_2_2.png"
+		alt="Example of application view where the brightness has a high value"
+		src="https://ucarecdn.com/43ed6152-275f-411a-a9db-eba8dc6d859d/"  /></p>
