@@ -11,6 +11,7 @@ import android.widget.Button
 import android.widget.ImageView
 import androidx.activity.result.contract.ActivityResultContracts.StartActivityForResult
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.graphics.scale
 import androidx.core.graphics.set
 import com.google.android.material.slider.Slider
 
@@ -23,6 +24,8 @@ class MainActivity : AppCompatActivity() {
 
     private val galleryButton: Button by lazy {
         findViewById<Button>(R.id.btnGallery)
+//                    .also { it.text = "wrongText" }    // should produce "Wrong text for btnGallery expected:<[GALLERY]> but was:<[WRONGTEXT]>"
+
     }
 
     private val brightnessSlider: Slider by lazy {
@@ -41,6 +44,7 @@ class MainActivity : AppCompatActivity() {
                 val uri = result.data?.data ?: return@registerForActivityResult
                 currentImage.setImageURI(uri)
                 currentImageDrawable = currentImage.drawable as BitmapDrawable?
+//                currentImage.setImageBitmap(null)  // should produce "Image was null after loading from gallery"
             }
         }
 
@@ -52,7 +56,10 @@ class MainActivity : AppCompatActivity() {
         setListener()
 
         //do not change this line
-        currentImage.setImageBitmap(createBitmap())         // commenting this line should produce "is "ivPhoto" not empty and no crash occurs while swiping slider?"
+        currentImage.setImageBitmap(createBitmap())         // commenting this line should produce "Initial image was null, it should be set with ___.setImageBitmap(createBitmap())"
+//        currentImage.setImageBitmap(createBitmap().scale(10, 100))  // should produce "Is defaultBitmap set correctly? Width expected:<200> but was:<10>"
+//        currentImage.setImageBitmap(createBitmap().scale(200, 10))  // should produce "Is defaultBitmap set correctly? Height expected:<100> but was:<10>"
+        //
         currentImageDrawable = currentImage.drawable as BitmapDrawable?
     }
 
@@ -60,6 +67,7 @@ class MainActivity : AppCompatActivity() {
     private fun setListener() {
         galleryButton.setOnClickListener { view ->
             val intent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
+//            val intent = Intent(Intent.ACTION_APP_ERROR, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)  // changing above line to this should produce "Intent found was different from expected"
             registerForActivityResult.launch(intent)    // commenting this line should produce "No intent was found by tests. Have you launched an intent?"
         }
 
@@ -68,7 +76,7 @@ class MainActivity : AppCompatActivity() {
             val copy = bitmap.copy(Bitmap.Config.RGB_565, true)
             val height = bitmap.height
             val width = bitmap.width
-            val intValue = value.toInt() // + 200  // should produce "Wrong values after brightness applied. expected <(220, 250, 255)> actual <(255, 255, 255)>"
+            val intValue = value.toInt() // + 200  // should produce "Wrong values after brightness applied. expected <(__, __, __)> actual <(__, __, __)>"
 
             for(y in 0 until height) {
                 for(x in 0 until width) {
@@ -124,7 +132,7 @@ class MainActivity : AppCompatActivity() {
                 B = (x+y) % 100 + 120
 
                 pixels[index] = Color.rgb(R,G,B)
-//                pixels[index] = Color.rgb(R + 20,G,B)  // should produce "is defaultBitmap set correctly? expected:<(130, 140, 150)> but was:<(110, 140, 150)>"
+//                pixels[index] = Color.rgb(R + 20,G,B)  // should produce "Is defaultBitmap set correctly? Rgb expected:<(130, 140, 150)> but was:<(110, 140, 150)>"
 
             }
         }

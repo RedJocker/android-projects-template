@@ -9,6 +9,7 @@ import android.widget.ImageView
 import com.google.android.material.slider.Slider
 import org.hyperskill.photoeditor.TestUtils.assertColorsValues
 import org.hyperskill.photoeditor.TestUtils.findViewByString
+import org.junit.Assert
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.Robolectric
@@ -18,36 +19,122 @@ import org.robolectric.shadows.ShadowActivity
 import org.robolectric.shadows.ShadowLooper
 import kotlin.AssertionError
 
-//version 0.2
+//version 0.3
 @RunWith(RobolectricTestRunner::class)
 class Stage6UnitTest {
 
-    private val messageNullInitialImage = "Initial image was null, it should be set with ___.setImageBitmap(createBitmap())"
     private val messageNullAfterFilters = "Image was null after filters been applied"
     private val messageWrongValues = "Wrong values after filters been applied."
-    private val messageSynchronousCode = "Are your filters being applied asynchronously.?"
+    private val messageSynchronousCode = "Are your filters being applied asynchronously?"
     private val marginError = 3
 
     private val activityController = Robolectric.buildActivity(MainActivity::class.java)
     private val activity = activityController.setup().get()
-
-
-    private val ivPhoto by lazy { activity.findViewByString<ImageView>("ivPhoto") }
-    private val btnGallery by lazy { activity.findViewByString<Button>("btnGallery") }
-    private val btnSave by lazy { activity.findViewByString<Button>("btnSave") }
-    private val slBrightness by lazy { activity.findViewByString<Slider>("slBrightness") }
-    private val slContrast by lazy { activity.findViewByString<Slider>("slContrast") }
-    private val slSaturation by lazy { activity.findViewByString<Slider>("slSaturation") }
-    private val slGamma by lazy { activity.findViewByString<Slider>("slGamma") }
     private val shadowActivity: ShadowActivity by lazy { Shadows.shadowOf(activity) }
     private val shadowLooper: ShadowLooper by lazy { Shadows.shadowOf(Looper.getMainLooper()) }
 
 
+    private val ivPhoto by lazy { activity.findViewByString<ImageView>("ivPhoto")
+        .also(this::testShouldCheckImageIsSetToDefaultBitmap)
+    }
+    private val btnGallery by lazy { activity.findViewByString<Button>("btnGallery")
+        .also { testShouldCheckButton(it, "GALLERY", "btnGallery") }
+    }
+    private val btnSave by lazy { activity.findViewByString<Button>("btnSave")
+        .also { testShouldCheckButton(it, "SAVE", "btnSave") }
+    }
+    private val slBrightness by lazy { activity.findViewByString<Slider>("slBrightness")
+        .also { testShouldCheckSlider(it, "slBrightness") }
+    }
+    private val slContrast by lazy { activity.findViewByString<Slider>("slContrast")
+        .also { testShouldCheckSlider(it, "slContrast") }
+    }
+    private val slSaturation by lazy { activity.findViewByString<Slider>("slSaturation")
+        .also { testShouldCheckSlider(it, "slSaturation") }
+    }
+    private val slGamma by lazy { activity.findViewByString<Slider>("slGamma")
+        .also { testShouldCheckSlider(it, "slGamma",
+            0.2f, 0.2f, 4f, 1f)
+        }
+    }
+
+    private fun testShouldCheckImageIsSetToDefaultBitmap(ivPhoto: ImageView) {
+        val messageInitialImageNull = "Initial image was null, it should be set with ___.setImageBitmap(createBitmap())"
+        val messageWrongInitialImage = "Is defaultBitmap set correctly?"
+        val actualBitmap = (ivPhoto.drawable as BitmapDrawable?)?.bitmap ?: throw AssertionError(
+            messageInitialImageNull
+        )
+        Assert.assertEquals("$messageWrongInitialImage Width", 200, actualBitmap.width)
+        Assert.assertEquals("$messageWrongInitialImage Height", 100, actualBitmap.height)
+
+        val expectedRgb = Triple(110, 140, 150)
+        Assert.assertEquals("$messageWrongInitialImage Rgb", expectedRgb, singleColor(actualBitmap))
+    }
+
+    private fun testShouldCheckButton(btn: Button, expectedInitialText: String, btnName: String) {
+        Assert.assertEquals(
+            "Wrong text for $btnName",
+            expectedInitialText.toUpperCase(), btn.text.toString().toUpperCase()
+        )
+    }
+
+    private fun testShouldCheckSlider(
+        slBrightness: Slider, sliderName: String, expectedStepSize: Float = 10f ,
+        expectedValueFrom: Float = -250f, expectedValueTo: Float = 250f, expectedValue: Float = 0f) {
+
+        val message1 = "\"$sliderName\" should have proper stepSize attribute"
+        Assert.assertEquals(message1, expectedStepSize, slBrightness.stepSize)
+
+        val message2 = "\"$sliderName\" should have proper valueFrom attribute"
+        Assert.assertEquals(message2, expectedValueFrom, slBrightness.valueFrom)
+
+        val message3 = "\"$sliderName\" should have proper valueTo attribute"
+        Assert.assertEquals(message3, expectedValueTo, slBrightness.valueTo)
+
+        val message4 = "\"$sliderName\" should have proper initial value"
+        Assert.assertEquals(message4, expectedValue, slBrightness.value)
+    }
+
+    @Test
+    fun testShouldCheckImageView() {
+        ivPhoto // initializes variable and perform initialization assertions
+    }
+
+    @Test
+    fun testShouldCheckSliderBrightness() {
+        slBrightness // initializes variable and perform initialization assertions
+    }
+
+    @Test
+    fun testShouldCheckSliderContrast() {
+        slContrast // initializes variable and perform initialization assertions
+    }
+
+    @Test
+    fun testShouldCheckSliderSaturation() {
+        slSaturation // initializes variable and perform initialization assertions
+    }
+
+    @Test
+    fun testShouldCheckSliderGamma() {
+        slGamma // initializes variable and perform initialization assertions
+    }
+
+    @Test
+    fun testShouldCheckButtonGallery() {
+        btnGallery // initializes variable and perform initialization assertions
+    }
+
+    @Test
+    fun testShouldCheckButtonSave() {
+        btnSave  // initializes variable and perform initialization assertions
+    }
+
+
     @Test
     fun testShouldCheckHighBrightnessValue() {
-        val initialImage = (ivPhoto.drawable as BitmapDrawable?)?.bitmap ?: throw AssertionError(
-            messageNullInitialImage
-        )
+        slBrightness
+        val initialImage = (ivPhoto.drawable as BitmapDrawable).bitmap
         val initialRgb = singleColor(initialImage, 70, 60)
 
         slBrightness.value += 120
@@ -70,9 +157,8 @@ class Stage6UnitTest {
 
     @Test
     fun testShouldCheckSomeContrastValue() {
-        val initialImage = (ivPhoto.drawable as BitmapDrawable?)?.bitmap ?: throw AssertionError(
-            messageNullInitialImage
-        )
+        slContrast
+        val initialImage = (ivPhoto.drawable as BitmapDrawable).bitmap
         val initialRgb = singleColor(initialImage, 70, 60)
 
         slContrast.value += 100
@@ -94,9 +180,8 @@ class Stage6UnitTest {
 
     @Test
     fun testShouldCheckSomeSaturationValue() {
-        val initialImage = (ivPhoto.drawable as BitmapDrawable?)?.bitmap ?: throw AssertionError(
-            messageNullInitialImage
-        )
+        slSaturation
+        val initialImage = (ivPhoto.drawable as BitmapDrawable).bitmap
         val initialRgb = singleColor(initialImage, 70, 60)
 
         slSaturation.value += 80
@@ -118,9 +203,8 @@ class Stage6UnitTest {
 
     @Test
     fun testShouldCheckSomeGammaValue() {
-        val initialImage = (ivPhoto.drawable as BitmapDrawable?)?.bitmap ?: throw AssertionError(
-            messageNullInitialImage
-        )
+        slGamma
+        val initialImage = (ivPhoto.drawable as BitmapDrawable).bitmap
         val initialRgb = singleColor(initialImage, 70, 60)
 
 
@@ -145,11 +229,12 @@ class Stage6UnitTest {
 
     @Test
     fun testShouldCheckDefaultBitmapEdit() {
-        val initialImage = (ivPhoto.drawable as BitmapDrawable?)?.bitmap ?: throw AssertionError(
-            messageNullInitialImage
-        )
+        slBrightness
+        slContrast
+        slSaturation
+        slGamma
+        val initialImage = (ivPhoto.drawable as BitmapDrawable).bitmap
         val initialRgb = singleColor(initialImage, 70, 60)
-
 
         slBrightness.value += slBrightness.stepSize
         slContrast.value += slContrast.stepSize * 4
@@ -176,11 +261,12 @@ class Stage6UnitTest {
 
     @Test
     fun testShouldCheckDefaultBitmapEdit2() {
-        val initialImage = (ivPhoto.drawable as BitmapDrawable?)?.bitmap ?: throw AssertionError(
-            messageNullInitialImage
-        )
+        slBrightness
+        slContrast
+        slSaturation
+        slGamma
+        val initialImage = (ivPhoto.drawable as BitmapDrawable).bitmap
         val initialRgb = singleColor(initialImage, 70, 60)
-
 
         slGamma.value += slGamma.stepSize * 5
         slSaturation.value += slSaturation.stepSize * 5

@@ -36,29 +36,49 @@ class MainActivity : AppCompatActivity() {
     private val currentImage: ImageView by lazy {
         findViewById<ImageView>(R.id.ivPhoto)
     }
-
     private val galleryButton: Button by lazy {
         findViewById<Button>(R.id.btnGallery)
+//                    .also { it.text = "wrongText" }    // should produce "Wrong text for btnGallery expected:<[GALLERY]> but was:<[WRONGTEXT]>"
     }
-
     private val saveButton : Button by lazy {
-        findViewById<Button>(R.id.btnSave);
+        findViewById<Button>(R.id.btnSave)
+//            .also{ it.text = "wrong value" }  // should produce "Wrong text for btnSave expected:<[SAVE]> but was:<[WRONG VALUE]>"
     }
-
     private val brightnessSlider: Slider by lazy {
-        findViewById<Slider>(R.id.slBrightness);
+        findViewById<Slider>(R.id.slBrightness)
+//            .also {
+//                it.stepSize = 0.2f       // should produce ""slBrightness" should have proper stepSize attribute expected:<10.0> but was:<0.2>"
+//                it.valueFrom = 0f       // should produce ""slBrightness" should have proper valueFrom attribute expected:<-250.0> but was:<0.0>"
+//                it.valueTo = 500f      // should produce ""slBrightness" should have proper valueTo attribute expected:<250.0> but was:<500.0>"
+//                it.value = 100f       // should produce ""slBrightness" should have proper initial value expected:<0.0> but was:<100.0>"
+//            }
     }
-
     private val contrastSlider: Slider by lazy {
         findViewById<Slider>(R.id.slContrast)
+//            .also {
+//                it.stepSize = 0.5f        // should produce ""slContrast" should have proper stepSize attribute expected:<10.0> but was:<0.5>"
+//                it.valueFrom = -100.0f   // should produce ""slContrast" should have proper valueFrom attribute expected:<-250.0> but was:<-100.0>"
+//                it.valueTo = 100.0f     // should produce ""slContrast" should have proper valueTo attribute expected:<250.0> but was:<100.0>"
+//                it.value = 50.0f       // should produce ""slContrast" should have proper initial value expected:<0.0> but was:<50.0>"
+//            }
     }
-
     private val saturationSlider: Slider by lazy {
         findViewById<Slider>(R.id.slSaturation)
+//            .also {
+//                it.stepSize = 2f           // should produce ""slSaturation" should have proper stepSize attribute expected:<10.0> but was:<2.0>"
+//                it.valueFrom = -120f      // should produce ""slSaturation" should have proper valueFrom attribute expected:<-250.0> but was:<-120.0>"
+//                it.valueTo = 250f        // should produce ""slSaturation" should have proper initial value expected:<0.0> but was:<50.0>"
+//                it.value = 50f          // should produce ""slSaturation" should have proper initial value expected:<0.0> but was:<50.0>"
+//            }
     }
-
     private val gammaSlider: Slider by lazy {
         findViewById<Slider>(R.id.slGamma)
+//            .also {
+//                it.stepSize = 0.1f          // should produce ""slGamma" should have proper stepSize attribute expected:<0.2> but was:<10.0>"
+//                it.valueFrom = -250f      // should produce ""slGamma" should have proper valueFrom attribute expected:<0.2> but was:<-250.0>"
+//                it.valueTo = 250f        // should produce ""slGamma" should have proper valueTo attribute expected:<4.0> but was:<250.0>"
+//                it.value = 2.0f           // should produce ""slGamma" should have proper initial value expected:<1.0> but was:<2.0>"
+//            }
     }
 
     private val intentLauncher: ActivityResultLauncher<Intent> =
@@ -80,6 +100,8 @@ class MainActivity : AppCompatActivity() {
 
         //do not change this line
         currentImage.setImageBitmap(createBitmap())
+//        currentImage.setImageBitmap(bitmap)        // should produce "Wrong values after filters been applied. expected: <(56, 86, 98)> actual: <(__, __, __)>"
+//        currentImage.setImageBitmap(null)         // should produce "Image was null after filters been applied"
         //
 
         currentOriginalImageDrawable = currentImage.drawable as BitmapDrawable?

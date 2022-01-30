@@ -34,15 +34,22 @@ class MainActivity : AppCompatActivity() {
 
     private val galleryButton: Button by lazy {
         findViewById<Button>(R.id.btnGallery)
-    }
-
-    private val brightnessSlider: Slider by lazy {
-        findViewById<Slider>(R.id.slBrightness)
+//                    .also { it.text = "wrongText" }   // should produce "Wrong text for btnGallery expected:<[GALLERY]> but was:<[WRONGTEXT]>"
     }
 
     private val saveButton : Button by lazy {
         findViewById<Button>(R.id.btnSave)
-//            .also{ it.text = "wrong value" }  // should produce "Wrong text for btnSave expected:<[SAVE]> but was:<[WRONG VALUE]>"
+//            .also{ it.text = "wrong value" }    // should produce "Wrong text for btnSave expected:<[SAVE]> but was:<[WRONG VALUE]>"
+    }
+
+    private val brightnessSlider: Slider by lazy {
+        findViewById<Slider>(R.id.slBrightness)
+//            .also {
+//                it.stepSize = 0.2f       // should produce ""slBrightness" should have proper stepSize attribute expected:<10.0> but was:<0.2>"
+//                it.valueFrom = 0f       // should produce ""slBrightness" should have proper valueFrom attribute expected:<-250.0> but was:<0.0>"
+//                it.valueTo = 500f      // should produce ""slBrightness" should have proper valueTo attribute expected:<250.0> but was:<500.0>"
+//                it.value = 100f       // should produce ""slBrightness" should have proper initial value expected:<0.0> but was:<100.0>"
+//            }
     }
 
     private val intentLauncher: ActivityResultLauncher<Intent> =
@@ -63,6 +70,8 @@ class MainActivity : AppCompatActivity() {
 
         //do not change this line
         currentImage.setImageBitmap(createBitmap())         // commenting this line should produce "Initial image was null, it should be set with ___.setImageBitmap(createBitmap())"
+//        currentImage.setImageBitmap(createBitmap().scale(10, 100))  // should produce "Is defaultBitmap set correctly? Width expected:<200> but was:<10>"
+//        currentImage.setImageBitmap(createBitmap().scale(200, 10))  // should produce "Is defaultBitmap set correctly? Height expected:<100> but was:<10>"
         //
 
         currentOriginalImageDrawable = currentImage.drawable as BitmapDrawable?
@@ -94,8 +103,10 @@ class MainActivity : AppCompatActivity() {
 //                    Uri.parse(Images.Media.EXTERNAL_CONTENT_URI.toString() + "/1"), values
 //                ) ?: return@setOnClickListener                                     // produce "image loaded from content://media/external/images/media/1 had wrong width expected:<200> but was:<100>"
 
-                val openOutputStream = contentResolver.openOutputStream(uri)
-                bitmap.compress(Bitmap.CompressFormat.JPEG, 100, openOutputStream)
+                contentResolver.openOutputStream(uri).use {
+                    bitmap.compress(Bitmap.CompressFormat.JPEG, 100, it)
+                    //bitmap.compress(Bitmap.CompressFormat.PNG, 100, it)    // produce "image loaded from content://media/external/images/media/1 had wrong content: array lengths differed, expected.length=993 actual.length=2668;"
+                }
             } else {
                 requestPermissions(listOf(Manifest.permission.WRITE_EXTERNAL_STORAGE))   // commenting should produce "Have you asked permission to write?"
             }
@@ -115,6 +126,7 @@ class MainActivity : AppCompatActivity() {
                 }
             }
             currentImage.setImageBitmap(copy)
+//            currentImage.setImageBitmap(null)  // should produce "Image was null after slBrightness triggered"
         }
     }
 

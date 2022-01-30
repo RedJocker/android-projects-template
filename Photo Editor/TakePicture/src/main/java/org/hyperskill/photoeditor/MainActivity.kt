@@ -1,17 +1,16 @@
 package org.hyperskill.photoeditor
 
-import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.Color
-import android.graphics.drawable.BitmapDrawable
 import android.os.Bundle
 import android.provider.MediaStore
 import android.widget.Button
 import android.widget.ImageView
 import androidx.activity.result.contract.ActivityResultContracts.StartActivityForResult
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.graphics.scale
 
 
 class MainActivity : AppCompatActivity() {
@@ -42,7 +41,9 @@ class MainActivity : AppCompatActivity() {
         setListener()
 
         //do not change this line
-        currentImage.setImageBitmap(createBitmap())      // commenting out this line should produce "is "ivPhoto" not empty?"
+        currentImage.setImageBitmap(createBitmap())      // commenting out this line should produce "Initial image was null, it should be set with ___.setImageBitmap(createBitmap())"
+//        currentImage.setImageBitmap(createBitmap().scale(10, 100))  // should produce "Is defaultBitmap set correctly? Width expected:<200> but was:<10>"
+//        currentImage.setImageBitmap(createBitmap().scale(200, 10))  // should produce "Is defaultBitmap set correctly? Height expected:<100> but was:<10>"
         //
     }
 
@@ -82,6 +83,7 @@ class MainActivity : AppCompatActivity() {
                 B = (x+y) % 100 + 120
 
                 pixels[index] = Color.rgb(R,G,B)
+//                pixels[index] = Color.rgb(R + 20,G,B) // should produce "Is defaultBitmap set correctly? Rgb expected:<(110, 140, 150)> but was:<(__, __, __)>"
 
             }
         }

@@ -9,6 +9,7 @@ import android.graphics.Color
 import android.graphics.drawable.BitmapDrawable
 import android.net.Uri
 import android.os.Looper
+import android.provider.MediaStore
 import android.widget.Button
 import android.widget.ImageView
 import com.google.android.material.slider.Slider
@@ -25,71 +26,96 @@ import org.robolectric.android.controller.ActivityController
 import org.robolectric.shadows.ShadowActivity
 import org.robolectric.shadows.ShadowLooper
 import kotlin.AssertionError
-import kotlin.math.max
-import kotlin.math.min
 
-// version 0.2
+// version 0.3
 @RunWith(RobolectricTestRunner::class)
 class Stage2UnitTest {
 
-    private val messageNullImage = "Initial image was null, it should be set with ___.setImageBitmap(createBitmap())"
     private val messageNullAfterSlBrightness = "Image was null after slBrightness triggered"
     private val messageIntentNotFound = "No intent was found by tests. Have you launched an intent?"
     private val messageWrongValues = "Wrong values after brightness applied."
 
-
     private val activityController: ActivityController<MainActivity> = Robolectric.buildActivity(MainActivity::class.java)
     private val activity: MainActivity = activityController.setup().get()
-
-    private val ivPhoto by lazy { activity.findViewByString<ImageView>("ivPhoto") }
-    private val btnGallery by lazy { activity.findViewByString<Button>("btnGallery") }
-    private val slBrightness by lazy { activity.findViewByString<Slider>("slBrightness") }
     private val shadowActivity: ShadowActivity by lazy { Shadows.shadowOf(activity) }
     private val shadowLooper: ShadowLooper by lazy { Shadows.shadowOf(Looper.getMainLooper()) }
-
     private val marginError = 1
 
-    @Test
-    fun testShouldCheckSliderExist() {
-        val message2 = "\"slBrightness\" should have proper stepSize attribute"
-        assertEquals(message2, 10f, slBrightness.stepSize)
+    private val ivPhoto by lazy { activity.findViewByString<ImageView>("ivPhoto")
+        .also(this::testShouldCheckImageIsSetToDefaultBitmap)
+    }
+    private val btnGallery by lazy { activity.findViewByString<Button>("btnGallery")
+        .also { testShouldCheckButton(it, "GALLERY", "btnGallery") }
+    }
+    private val slBrightness by lazy { activity.findViewByString<Slider>("slBrightness")
+        .also { testShouldCheckSlider(it, "slBrightness") }
+    }
 
-        val message3 = "\"slBrightness\" should have proper valueFrom attribute"
-        assertEquals(message3, -250f, slBrightness.valueFrom,)
+    private fun testShouldCheckImageIsSetToDefaultBitmap(ivPhoto: ImageView) {
+        val messageInitialImageNull = "Initial image was null, it should be set with ___.setImageBitmap(createBitmap())"
+        val messageWrongInitialImage = "Is defaultBitmap set correctly?"
+        val actualBitmap = (ivPhoto.drawable as BitmapDrawable?)?.bitmap ?: throw AssertionError(
+            messageInitialImageNull
+        )
+        assertEquals("$messageWrongInitialImage Width", 200, actualBitmap.width)
+        assertEquals("$messageWrongInitialImage Height", 100, actualBitmap.height)
 
-        val message4 = "\"slBrightness\" should have proper valueTo attribute"
-        assertEquals(message4, 250f, slBrightness.valueTo,)
+        val expectedRgb = Triple(110, 140, 150)
+        assertEquals("$messageWrongInitialImage Rgb", expectedRgb, singleColor(actualBitmap))
+    }
 
-        val message5 = "\"slBrightness\" should have proper initial value"
-        assertEquals(message5, 0f, slBrightness.value)
+    private fun testShouldCheckButton(btn: Button, expectedInitialText: String, btnName: String) {
+        assertEquals("Wrong text for $btnName",
+            expectedInitialText.toUpperCase(), btn.text.toString().toUpperCase()
+        )
+    }
+
+    private fun testShouldCheckSlider(
+        slBrightness: Slider, sliderName: String, expectedStepSize: Float = 10f ,
+        expectedValueFrom: Float = -250f, expectedValueTo: Float = 250f, expectedValue: Float = 0f) {
+
+        val message1 = "\"$sliderName\" should have proper stepSize attribute"
+        assertEquals(message1, expectedStepSize, slBrightness.stepSize)
+
+        val message2 = "\"$sliderName\" should have proper valueFrom attribute"
+        assertEquals(message2, expectedValueFrom, slBrightness.valueFrom)
+
+        val message3 = "\"$sliderName\" should have proper valueTo attribute"
+        assertEquals(message3, expectedValueTo, slBrightness.valueTo)
+
+        val message4 = "\"$sliderName\" should have proper initial value"
+        assertEquals(message4, expectedValue, slBrightness.value)
     }
 
     @Test
-    fun testShouldCheckSliderNotCrashingByDefault() {
-        val message = "is \"ivPhoto\" not empty and no crash occurs while swiping slider?"
+    fun testShouldCheckImageView() {
+        ivPhoto // initializes variable and perform initialization assertions
+    }
 
+    @Test
+    fun testShouldCheckSliderBrightness() {
+        slBrightness // initializes variable and perform initialization assertions
+    }
+
+    @Test
+    fun testShouldCheckButtonGallery() {
+        btnGallery // initializes variable and perform initialization assertions
+    }
+
+    @Test
+    fun testShouldCheckSliderNotCrashing() {
+        ivPhoto // initializes variable and perform initialization assertions
         slBrightness.value += slBrightness.stepSize
         slBrightness.value -= slBrightness.stepSize
         shadowLooper.runToEndOfTasks()
         val bitmap = (ivPhoto.drawable as BitmapDrawable?)?.bitmap
-        assertNotNull(message, bitmap)
+        assertNotNull(messageNullAfterSlBrightness, bitmap)
     }
-
-    @Test
-    fun testShouldCheckImageIsSetToDefaultBitmap() {
-        val message = "is defaultBitmap set correctly?"
-
-        val actualBitmap = (ivPhoto.drawable as BitmapDrawable?)?.bitmap ?: throw AssertionError(messageNullImage)
-        val expectedBitmap = createBitmap()
-        assertEquals(message, singleColor(expectedBitmap), singleColor(actualBitmap))
-        assertEquals(message, expectedBitmap.width, actualBitmap.width)
-        assertEquals(message, expectedBitmap.height, actualBitmap.height,)
-    }
-
 
     @Test
     fun testShouldCheckDefaultBitmapEdit() {
-        val initialImage = (ivPhoto.drawable as BitmapDrawable?)?.bitmap ?: throw AssertionError(messageNullImage)
+        slBrightness
+        val initialImage = (ivPhoto.drawable as BitmapDrawable).bitmap // null checked on initialization
         val (initialRed, initialGreen, initialBlue) = singleColor(initialImage)
 
         val expectedRgb1 =
@@ -121,19 +147,30 @@ class Stage2UnitTest {
 
     @Test
     fun testShouldCheckNewBitmapEdit() {
-        val messageNullAfterLoading = "Image was null after loading from gallery"
-
+        ivPhoto // initializes variable and perform initialization assertions
+        slBrightness
         btnGallery.performClick()
         shadowLooper.runToEndOfTasks()
 
-        val activityResult: Intent = createGalleryPickActivityResultStub(activity)
-        val intent = shadowActivity.peekNextStartedActivityForResult()?.intent
+        val activityStubResult: Intent = createGalleryPickActivityResultStub(activity)
+        val actualIntent = shadowActivity.peekNextStartedActivityForResult()?.intent
             ?: throw AssertionError(messageIntentNotFound)
 
+        val expectedIntent = Intent(
+            Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI
+        )
+
+        assertTrue(
+            "Intent found was different from expected." +
+                    " expected <$expectedIntent> actual <$actualIntent>",
+            actualIntent.filterEquals(expectedIntent)
+        )
+
+        val messageNullAfterLoading = "Image was null after loading from gallery"
         shadowActivity.receiveResult(
-            intent,
+            actualIntent,
             Activity.RESULT_OK,
-            activityResult
+            activityStubResult
         )
         shadowLooper.runToEndOfTasks()
 
@@ -141,13 +178,11 @@ class Stage2UnitTest {
         val (initialRed, initialGreen, initialBlue) = singleColor(initialImage)
         val expectedRgb = Triple(initialRed + 50, initialGreen + 50, initialBlue + 50)
 
-
         slBrightness.value += slBrightness.stepSize * 3
         slBrightness.value += slBrightness.stepSize * 2
         shadowLooper.runToEndOfTasks()
         Thread.sleep(200)
         shadowLooper.runToEndOfTasks()
-
 
         val actualImage = (ivPhoto.drawable as BitmapDrawable).bitmap ?: throw AssertionError(messageNullAfterSlBrightness)
         val actualRgb = singleColor(actualImage, 80, 90)
@@ -164,48 +199,14 @@ class Stage2UnitTest {
         return  Triple(red,green,blue)
     }
 
-    private fun createBitmap(): Bitmap {
-        val width = 200
-        val height = 100
-        val pixels = IntArray(width * height)
-        // get pixel array from source
-
-        var R: Int
-        var G: Int
-        var B: Int
-        var index: Int
-
-        for (y in 0 until height) {
-            for (x in 0 until width) {
-                // get current index in 2D-matrix
-                index = y * width + x
-                // get color
-                R = x % 100 + 40
-                G = y % 100 + 80
-                B = (x + y) % 100 + 120
-
-                pixels[index] = Color.rgb(R, G, B)
-
-            }
-        }
-        // output bitmap
-        val bitmapOut = Bitmap.createBitmap(width, height, Bitmap.Config.RGB_565)
-        bitmapOut.setPixels(pixels, 0, width, 0, 0, width, height)
-        return bitmapOut
-    }
-
-    fun changeBrightness(colorValue: Int, filterValue: Int): Int {
-        return max(min(colorValue + filterValue, 255), 0)
-    }
-
-    fun createGalleryPickActivityResultStub(activity: MainActivity): Intent {
+    private fun createGalleryPickActivityResultStub(activity: MainActivity): Intent {
         val resultIntent = Intent()
         val uri = getUriToDrawable(activity, R.drawable.myexample)
-        resultIntent.setData(uri)
+        resultIntent.data = uri
         return resultIntent
     }
 
-    fun getUriToDrawable(context: Context, drawableId: Int): Uri {
+    private fun getUriToDrawable(context: Context, drawableId: Int): Uri {
         return Uri.parse(
             ContentResolver.SCHEME_ANDROID_RESOURCE +
                     "://" + context.resources.getResourcePackageName(drawableId)
