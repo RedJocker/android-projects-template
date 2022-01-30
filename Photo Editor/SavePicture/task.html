@@ -99,21 +99,22 @@
 	<pre><code lang="kotlin">saveButton.setOnClickListener { _ ->
   if ( /* check if has permission */ ) {
 
-	val bitmap: Bitmap = /* image you want to save */
-	val values = ContentValues()
-	values.put(Images.Media.DATE_TAKEN, System.currentTimeMillis())
-	values.put(Images.Media.MIME_TYPE, "image/jpeg")
-	values.put(Images.ImageColumns.WIDTH, bitmap.width)
-	values.put(Images.ImageColumns.HEIGHT, bitmap.height)
+    val bitmap: Bitmap = /* image you want to save */
+    val values = ContentValues()
+    values.put(Images.Media.DATE_TAKEN, System.currentTimeMillis())
+    values.put(Images.Media.MIME_TYPE, "image/jpeg")
+    values.put(Images.ImageColumns.WIDTH, bitmap.width)
+    values.put(Images.ImageColumns.HEIGHT, bitmap.height)
 
-	val uri = this@MainActivity.contentResolver.insert(
-	  Images.Media.EXTERNAL_CONTENT_URI, values
-	) ?: return@setOnClickListener
+    val uri = this@MainActivity.contentResolver.insert(
+      Images.Media.EXTERNAL_CONTENT_URI, values
+    ) ?: return@setOnClickListener
 
-	val openOutputStream = contentResolver.openOutputStream(uri)
-	bitmap.compress(Bitmap.CompressFormat.JPEG, 100, openOutputStream)
+    contentResolver.openOutputStream(uri).use {
+      bitmap.compress(Bitmap.CompressFormat.JPEG, 100, it)
+    }
   } else {
-	/* request permission */
+      /* request permission */
   }
 }</code></pre>
 </details>
