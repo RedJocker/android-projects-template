@@ -1,63 +1,63 @@
 <h2>Description</h2>
 
-	<p>
-		In this stage, we will save our edited photo - the save button&nbsp;comes into play.<br />
-		The user should be able to&nbsp;save loaded photo,&nbsp;&nbsp;so that it will appear in the gallery folder.
-	</p>
+<p>
+	In this stage, we will save our edited photo - the save button&nbsp;comes into play.<br />
+	The user should be able to&nbsp;save loaded photo,&nbsp;&nbsp;so that it will appear in the gallery folder.
+</p>
 
-	<p>
-		To be able to save content permission to write to external storage will be required.
-	</p>
+<p>
+	To be able to save content permission to write to external storage will be required.
+</p>
 
-	<br/>
+<br/>
 
 <h2>Objectives</h2>
 
-	<ol>
-		<li>
-			Add a <code>Button</code>&nbsp;for saving your photo with&nbsp;the&nbsp;<code>id</code>
-			attribute <code>btnSave</code>.
-		</li>
+<ol>
+	<li>
+		Add a <code>Button</code>&nbsp;for saving your photo with&nbsp;the&nbsp;<code>id</code>
+		attribute <code>btnSave</code>.
+	</li>
 
-		<li>
-			Declare the required permissions on AndroidManifest.xml
-		</li>
+	<li>
+		Declare the required permissions on AndroidManifest.xml
+	</li>
 
-		<li>
-			<p>Add a proper onClick method to&nbsp;<code>btnSave</code>. This method should save the
-				current photo to <code>MediaStore.Images.Media.EXTERNAL_CONTENT_URI</code> folder in
-				JPEG format.</p>
-		</li>
+	<li>
+		<p>Add a proper onClick method to&nbsp;<code>btnSave</code>. This method should save the
+			current photo to <code>MediaStore.Images.Media.EXTERNAL_CONTENT_URI</code> folder in
+			JPEG format.</p>
+	</li>
 
-		<li>
-			Before actually saving content check if you have permission <code>Manifest.permission.WRITE_EXTERNAL_STORAGE</code>.<br/>
-			If you don't have permission request the permission first.
-		</li>
+	<li>
+		Before actually saving content check if you have permission <code>Manifest.permission.WRITE_EXTERNAL_STORAGE</code>.<br/>
+		If you don't have permission request the permission first.
+	</li>
 
-		<li>
-			Override the method <code>onRequestPermissionsResult</code> to check if
-			the permission was granted. If it was you should continue the saving procedure,
-			you might want to use <code>saveButton.callOnClick()</code> for that.
-		</li>
+	<li>
+		Override the method <code>onRequestPermissionsResult</code> to check if
+		the permission was granted. If it was you should continue the saving procedure,
+		you might want to use <code>saveButton.callOnClick()</code> for that.
+	</li>
 
-		<li>
-			For api versions before <code> Build.VERSION_CODES.M </code>
-			permissions were given on installation. So there is no need, nor a way, for requesting run time
-			permissions for those.
-			If you still want to make the code that check permissions compatible you can check
-			the hint section after the examples
-		</li>
-	</ol>
+	<li>
+		For api versions before <code> Build.VERSION_CODES.M </code>
+		permissions were given on installation. So there is no need, nor a way, for requesting run time
+		permissions for those.
+		If you still want to make the code that check permissions compatible you can check
+		the hint section after the examples
+	</li>
+</ol>
 
 
 <h3> External references </h3>
-	<p>
-		On the requesting permission subject you can check this
-		<a href="https://www.geeksforgeeks.org/android-how-to-request-permissions-in-android-application/">
-			text reference
-		</a> or if you prefer there is also this
-		<a href="https://www.youtube.com/watch?v=S4jkcRhembY"> video reference </a>
-	</p>
+<p>
+	On the requesting permission subject you can check this
+	<a href="https://www.geeksforgeeks.org/android-how-to-request-permissions-in-android-application/">
+		text reference
+	</a> or if you prefer there is also this
+	<a href="https://www.youtube.com/watch?v=S4jkcRhembY"> video reference </a>
+</p>
 
 <br/>
 <h2>Examples</h2>
@@ -76,44 +76,45 @@
 
 <h2>Hints</h2>
 
-	<details>
-		<summary>
-			To check if permissions were given you may use something like this:<br/><br/>
-		</summary>
+<details>
+	<summary>
+		To check if permissions were given you may use something like this:<br/><br/>
+	</summary>
 
-		<pre><code lang="kotlin">private fun hasPermission(manifestPermission: String): Boolean {
+	<pre><code lang="kotlin">private fun hasPermission(manifestPermission: String): Boolean {
   return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
     this.checkSelfPermission(manifestPermission) == PackageManager.PERMISSION_GRANTED
   } else {
     PermissionChecker.checkSelfPermission(this, manifestPermission) == PermissionChecker.PERMISSION_GRANTED
   }
 }</code></pre>
-	</details>
-	<br>
-	<details>
-		<summary>
-			To save to external storage you might want use something similar to this adapted
-			to your code base:<br/><br/>
-		</summary>
+</details>
+<br>
+<details>
+	<summary>
+		To save to external storage you might want use something similar to this adapted
+		to your code base:<br/><br/>
+	</summary>
 
-		<pre><code lang="kotlin">saveButton.setOnClickListener { _ ->
+	<pre><code lang="kotlin">saveButton.setOnClickListener { _ ->
   if ( /* check if has permission */ ) {
 
-	val bitmap: Bitmap = /* image you want to save */
-	val values = ContentValues()
-	values.put(Images.Media.DATE_TAKEN, System.currentTimeMillis())
-	values.put(Images.Media.MIME_TYPE, "image/jpeg")
-	values.put(Images.ImageColumns.WIDTH, bitmap.width)
-	values.put(Images.ImageColumns.HEIGHT, bitmap.height)
+    val bitmap: Bitmap = /* image you want to save */
+    val values = ContentValues()
+    values.put(Images.Media.DATE_TAKEN, System.currentTimeMillis())
+    values.put(Images.Media.MIME_TYPE, "image/jpeg")
+    values.put(Images.ImageColumns.WIDTH, bitmap.width)
+    values.put(Images.ImageColumns.HEIGHT, bitmap.height)
 
-	val uri = this@MainActivity.contentResolver.insert(
-	  Images.Media.EXTERNAL_CONTENT_URI, values
-	) ?: return@setOnClickListener
+    val uri = this@MainActivity.contentResolver.insert(
+      Images.Media.EXTERNAL_CONTENT_URI, values
+    ) ?: return@setOnClickListener
 
-	val openOutputStream = contentResolver.openOutputStream(uri)
-	bitmap.compress(Bitmap.CompressFormat.JPEG, 100, openOutputStream)
+    contentResolver.openOutputStream(uri).use {
+      bitmap.compress(Bitmap.CompressFormat.JPEG, 100, it)
+    }
   } else {
-	/* request permission */
+      /* request permission */
   }
 }</code></pre>
-	</details>
+</details>
