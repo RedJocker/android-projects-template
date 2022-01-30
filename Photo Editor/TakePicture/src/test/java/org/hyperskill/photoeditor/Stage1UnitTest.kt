@@ -4,6 +4,9 @@ import android.app.Activity
 import android.content.ContentResolver
 import android.content.Context
 import android.content.Intent
+import android.graphics.Bitmap
+import android.graphics.Color
+import android.graphics.drawable.BitmapDrawable
 import android.net.Uri
 import android.os.Looper
 import android.provider.MediaStore
@@ -20,7 +23,7 @@ import org.robolectric.Shadows.shadowOf
 import java.lang.NullPointerException
 import kotlin.AssertionError
 
-// version 0.2
+// version 0.3
 @RunWith(RobolectricTestRunner::class)
 class Stage1UnitTest {
 
@@ -29,60 +32,66 @@ class Stage1UnitTest {
     private val activityController = Robolectric.buildActivity(MainActivity::class.java)
     private val activity = activityController.setup().get()
 
-    private val ivPhoto by lazy { activity.findViewByString<ImageView>("ivPhoto") }
-    private val btnGallery by lazy { activity.findViewByString<Button>("btnGallery") }
+    private val ivPhoto by lazy { activity.findViewByString<ImageView>("ivPhoto")
+        .also(this::testShouldCheckImageIsSetToDefaultBitmap)
+    }
+    private val btnGallery by lazy { activity.findViewByString<Button>("btnGallery")
+        .also { testShouldCheckButton(it, "GALLERY", "btnGallery") }
+    }
     private val shadowActivity: ShadowActivity by lazy { shadowOf(activity) }
 
-    @Test
-    fun testShouldCheckImageViewExist() {
-        ivPhoto
-    }
 
-    @Test
-    fun testShouldCheckImageViewImageNotEmpty() {
-        val drawable = (ivPhoto.drawable)
-        val message2 = "is \"ivPhoto\" not empty?"
 
-        assertNotNull(message2, drawable)
-    }
-
-    @Test
-    fun testShouldCheckButtonExist() {
-        assertEquals("Wrong text for btnGallery",
-            "GALLERY", btnGallery.text.toString().toUpperCase()
+    private fun testShouldCheckImageIsSetToDefaultBitmap(ivPhoto: ImageView) {
+        val messageInitialImageNull = "Initial image was null, it should be set with ___.setImageBitmap(createBitmap())"
+        val messageWrongInitialImage = "Is defaultBitmap set correctly?"
+        val actualBitmap = (ivPhoto.drawable as BitmapDrawable?)?.bitmap ?: throw AssertionError(
+            messageInitialImageNull
         )
+        assertEquals("$messageWrongInitialImage Width", 200, actualBitmap.width)
+        assertEquals("$messageWrongInitialImage Height", 100, actualBitmap.height)
+
+        val expectedRgb = Triple(110, 140, 150)
+        assertEquals("$messageWrongInitialImage Rgb", expectedRgb, singleColor(actualBitmap))
+    }
+
+    private fun testShouldCheckButton(btn: Button, expectedInitialText: String, btnName: String) {
+        assertEquals("Wrong text for $btnName",
+            expectedInitialText.toUpperCase(), btn.text.toString().toUpperCase()
+        )
+    }
+
+    @Test
+    fun testShouldCheckImageView() {
+        ivPhoto // initializes variable and perform initialization assertions
+    }
+
+    @Test
+    fun testShouldCheckButtonGallery() {
+        btnGallery // initializes variable and perform initialization assertions
     }
 
     @Test
     fun testShouldCheckButtonOpensGallery() {
-
         btnGallery.performClick()
 
-        // The intent we expect to be launched when a user clicks on the button
         val expectedIntent = Intent(
             Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI
         )
 
-        // An Android "Activity" doesn't expose a way to find out about activities it launches
-        // Robolectric's "ShadowActivity" keeps track of all launched activities and exposes this information
-        // through the "getNextStartedActivity" method.
         val actualIntent = shadowActivity.nextStartedActivity
             ?: throw AssertionError(messageIntentNotFound)
 
-        // Determine if two intents are the same for the purposes of intent resolution (filtering).
-        // That is, if their action, data, type, class, and categories are the same. This does
-        // not compare any extra data included in the intents
         assertTrue(
             "Intent found was different from expected." +
                     " expected <$expectedIntent> actual <$actualIntent>",
             actualIntent.filterEquals(expectedIntent)
         )
-
     }
 
     @Test
     fun testShouldCheckButtonLoadsImage() {
-
+        ivPhoto // initializes variable and perform initialization assertions
         btnGallery.performClick()
         val activityResult = createGalleryPickActivityResultStub(activity)
         val intent = shadowActivity.peekNextStartedActivityForResult()?.intent
@@ -92,13 +101,13 @@ class Stage1UnitTest {
         )
         shadowOf(Looper.getMainLooper()).runToEndOfTasks()
 
-        val messageIvPhotoWasNull = "ivPhoto drawable was null"
-        assertNotNull(messageIvPhotoWasNull, ivPhoto.drawable)
+        val messageNullAfterLoading = "Image was null after loading from gallery"
+        assertNotNull(messageNullAfterLoading, ivPhoto.drawable)
 
         val actualDrawableId: Int = try {
             shadowOf(ivPhoto.drawable).createdFromResId   // shadowOf(ivPhoto.drawable) can throw NullPointer if .setImageBitmap(null)
         } catch (ex: NullPointerException) {
-            throw AssertionError(messageIvPhotoWasNull)
+            throw AssertionError(messageNullAfterLoading)
         }
 
         assertEquals("Drawable loaded is different from expected.",
@@ -120,5 +129,15 @@ class Stage1UnitTest {
                     + '/' + context.resources.getResourceTypeName(drawableId)
                     + '/' + context.resources.getResourceEntryName(drawableId)
         )
+    }
+
+    private fun singleColor(source: Bitmap, x: Int = 70, y: Int = 60): Triple<Int, Int, Int> {
+        val pixel = source.getPixel(x, y)
+
+        val red = Color.red(pixel)
+        val green = Color.green(pixel)
+        val blue = Color.blue(pixel)
+
+        return  Triple(red,green,blue)
     }
 }
