@@ -26,62 +26,122 @@ import org.robolectric.shadows.ShadowLooper
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 
-// version 0.2
+// version 0.3
 @RunWith(RobolectricTestRunner::class)
 class Stage3UnitTest {
-    private val messageNullInitialImage = "Initial image was null, it should be set with ___.setImageBitmap(createBitmap())"
     private val messageNullAfterSlBrightness = "Image was null after slBrightness triggered"
     private val messageWrongValues = "Wrong values after brightness applied."
     private val marginError = 1
 
     private val activityController: ActivityController<MainActivity> = Robolectric.buildActivity(MainActivity::class.java)
     private val activity: MainActivity = activityController.setup().get()
-
-    private val ivPhoto by lazy { activity.findViewByString<ImageView>("ivPhoto") }
-    private val btnGallery by lazy { activity.findViewByString<Button>("btnGallery") }
-    private val btnSave by lazy { activity.findViewByString<Button>("btnSave") }
-    private val slBrightness by lazy { activity.findViewByString<Slider>("slBrightness") }
     private val shadowActivity: ShadowActivity by lazy { Shadows.shadowOf(activity) }
     private val shadowLooper: ShadowLooper by lazy { Shadows.shadowOf(Looper.getMainLooper()) }
 
-    @Test
-    fun testShouldCheckSaveButtonExist() {
-        assertEquals("Wrong text for btnSave",
-            "SAVE", btnSave.text.toString().toUpperCase()
+    private val ivPhoto by lazy { activity.findViewByString<ImageView>("ivPhoto")
+        .also(this::testShouldCheckImageIsSetToDefaultBitmap)
+    }
+    private val btnGallery by lazy { activity.findViewByString<Button>("btnGallery")
+        .also { testShouldCheckButton(it, "GALLERY", "btnGallery") }
+    }
+    private val btnSave by lazy { activity.findViewByString<Button>("btnSave")
+        .also { testShouldCheckButton(it, "SAVE", "btnSave") }
+    }
+    private val slBrightness by lazy { activity.findViewByString<Slider>("slBrightness")
+        .also { testShouldCheckSlider(it, "slBrightness") }
+    }
+
+
+    private fun testShouldCheckImageIsSetToDefaultBitmap(ivPhoto: ImageView) {
+        val messageInitialImageNull = "Initial image was null, it should be set with ___.setImageBitmap(createBitmap())"
+        val messageWrongInitialImage = "Is defaultBitmap set correctly?"
+        val actualBitmap = (ivPhoto.drawable as BitmapDrawable?)?.bitmap ?: throw AssertionError(
+            messageInitialImageNull
         )
+        assertEquals("$messageWrongInitialImage Width", 200, actualBitmap.width)
+        assertEquals("$messageWrongInitialImage Height", 100, actualBitmap.height)
+
+        val expectedRgb = Triple(110, 140, 150)
+        assertEquals("$messageWrongInitialImage Rgb", expectedRgb, singleColor(actualBitmap))
+    }
+
+    private fun testShouldCheckButton(btn: Button, expectedInitialText: String, btnName: String) {
+        assertEquals("Wrong text for $btnName",
+            expectedInitialText.toUpperCase(), btn.text.toString().toUpperCase()
+        )
+    }
+
+    private fun testShouldCheckSlider(
+        slBrightness: Slider, sliderName: String, expectedStepSize: Float = 10f ,
+        expectedValueFrom: Float = -250f, expectedValueTo: Float = 250f, expectedValue: Float = 0f) {
+
+        val message1 = "\"$sliderName\" should have proper stepSize attribute"
+        assertEquals(message1, expectedStepSize, slBrightness.stepSize)
+
+        val message2 = "\"$sliderName\" should have proper valueFrom attribute"
+        assertEquals(message2, expectedValueFrom, slBrightness.valueFrom)
+
+        val message3 = "\"$sliderName\" should have proper valueTo attribute"
+        assertEquals(message3, expectedValueTo, slBrightness.valueTo)
+
+        val message4 = "\"$sliderName\" should have proper initial value"
+        assertEquals(message4, expectedValue, slBrightness.value)
+    }
+
+    @Test
+    fun testShouldCheckImageView() {
+        ivPhoto // initializes variable and perform initialization assertions
+    }
+
+    @Test
+    fun testShouldCheckSliderBrightness() {
+        slBrightness // initializes variable and perform initialization assertions
+    }
+
+    @Test
+    fun testShouldCheckButtonGallery() {
+        btnGallery // initializes variable and perform initialization assertions
+    }
+
+    @Test
+    fun testShouldCheckButtonSave() {
+        btnSave  // initializes variable and perform initialization assertions
     }
 
     @Test
     fun testShouldCheckSomeNewBitmapIsCreated() {
-
+        btnSave
         shadowActivity.grantPermissions(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-        val bitmapExpected = (ivPhoto.drawable as BitmapDrawable?)?.bitmap
-            ?: throw AssertionError(messageNullInitialImage)
+
+        val bitmapExpected = (ivPhoto.drawable as BitmapDrawable).bitmap
+        val expectedContent = ByteArrayOutputStream()
+        bitmapExpected.compress(Bitmap.CompressFormat.JPEG, 100, expectedContent)
+
         val contentResolver = activity.contentResolver
-        val output = ByteArrayOutputStream()
+        val actualContent = ByteArrayOutputStream()
         val shadowContentResolver = shadowOf(contentResolver)
         val uri = Uri.parse(MediaStore.Images.Media.EXTERNAL_CONTENT_URI.toString() + "/1").also{
             shadowLooper.runToEndOfTasks()
         } ?: throw AssertionError("Test failed to parse Uri")
         val messageError = "image loaded from $uri had wrong"
 
-        shadowContentResolver.registerOutputStream(uri, output)
+        shadowContentResolver.registerOutputStream(uri, actualContent)
         btnSave.performClick()
         shadowLooper.runToEndOfTasks()
-        shadowContentResolver.registerInputStream(uri, ByteArrayInputStream(output.toByteArray()))
-        shadowLooper.runToEndOfTasks()
 
-        val bitmapActual = contentResolver.openInputStream(uri).use(BitmapFactory::decodeStream)
-            ?: throw AssertionError("Test failed to decode bitmap")
-        shadowLooper.runToEndOfTasks()
+        val bitmapActual = BitmapFactory.decodeByteArray(
+            actualContent.toByteArray(), 0, actualContent.size()
+        )
 
         assertEquals("$messageError width", bitmapExpected.width, bitmapActual.width)
         assertEquals("$messageError height", bitmapExpected.height, bitmapActual.height)
+        assertArrayEquals("$messageError content", expectedContent.toByteArray(), actualContent.toByteArray())
     }
 
 
     @Test
     fun testShouldCheckPermission() {
+        btnSave
         val messagePermissionRequired = "Have you asked permission to write?"
         btnSave.performClick()
         shadowLooper.runToEndOfTasks()
@@ -92,7 +152,8 @@ class Stage3UnitTest {
 
     @Test
     fun testShouldCheckDefaultBitmapEdit() {
-        val initialImage = (ivPhoto.drawable as BitmapDrawable?)?.bitmap ?: throw AssertionError(messageNullInitialImage)
+        slBrightness
+        val initialImage = (ivPhoto.drawable as BitmapDrawable).bitmap // null checked on initialization
         val (initialRed, initialGreen, initialBlue) = singleColor(initialImage)
 
         val expectedRgb1 =
@@ -106,7 +167,7 @@ class Stage3UnitTest {
         Thread.sleep(200)
         shadowLooper.runToEndOfTasks()
 
-        val actualImage1 = (ivPhoto.drawable as BitmapDrawable?)?.bitmap ?: throw AssertionError(messageNullAfterSlBrightness)
+        val actualImage1 = (ivPhoto.drawable as BitmapDrawable).bitmap ?: throw AssertionError(messageNullAfterSlBrightness)
         val actualRgb1 = singleColor(actualImage1)
         assertColorsValues(messageWrongValues, expectedRgb1, actualRgb1, marginError)
 
@@ -116,7 +177,7 @@ class Stage3UnitTest {
         Thread.sleep(200)
         shadowLooper.runToEndOfTasks()
 
-        val actualImage2 = (ivPhoto.drawable as BitmapDrawable?)?.bitmap ?: throw AssertionError(messageNullAfterSlBrightness)
+        val actualImage2 = (ivPhoto.drawable as BitmapDrawable).bitmap ?: throw AssertionError(messageNullAfterSlBrightness)
         val actualRgb2 = singleColor(actualImage2)
         assertColorsValues(messageWrongValues, expectedRgb2, actualRgb2, marginError)
     }
