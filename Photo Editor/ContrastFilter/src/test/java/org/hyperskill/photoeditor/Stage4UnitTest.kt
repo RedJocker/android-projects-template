@@ -19,7 +19,7 @@ import org.robolectric.shadows.ShadowActivity
 import org.robolectric.shadows.ShadowLooper
 import kotlin.AssertionError
 
-// version 0.3
+// version 0.4
 @RunWith(RobolectricTestRunner::class)
 class Stage4UnitTest {
 
@@ -51,15 +51,14 @@ class Stage4UnitTest {
 
     private fun testShouldCheckImageIsSetToDefaultBitmap(ivPhoto: ImageView) {
         val messageInitialImageNull = "Initial image was null, it should be set with ___.setImageBitmap(createBitmap())"
-        val messageWrongInitialImage = "Is defaultBitmap set correctly?"
+        val messageWrongInitialImage = "Is defaultBitmap set correctly? It should be set with ___.setImageBitmap(createBitmap())"
         val actualBitmap = (ivPhoto.drawable as BitmapDrawable?)?.bitmap ?: throw AssertionError(
             messageInitialImageNull
         )
-        assertEquals("$messageWrongInitialImage Width", 200, actualBitmap.width)
-        assertEquals("$messageWrongInitialImage Height", 100, actualBitmap.height)
-
+        assertTrue(messageWrongInitialImage, 200 == actualBitmap.width)
+        assertTrue(messageWrongInitialImage, 100 == actualBitmap.height)
         val expectedRgb = Triple(110, 140, 150)
-        assertEquals("$messageWrongInitialImage Rgb", expectedRgb, singleColor(actualBitmap))
+        assertTrue(messageWrongInitialImage, expectedRgb == singleColor(actualBitmap))
     }
 
     private fun testShouldCheckButton(btn: Button, expectedInitialText: String, btnName: String) {
@@ -121,30 +120,10 @@ class Stage4UnitTest {
     }
 
     @Test
-    fun testShouldCheckDefaultBitmapEdit2() {
-        slBrightness
-        slContrast
-        (ivPhoto.drawable as BitmapDrawable).bitmap // null checked on initialization
-        val expected = Triple(149, 177, 205)
-
-        slBrightness.value += slBrightness.stepSize
-        slBrightness.value += slBrightness.stepSize
-        slContrast.value -= slContrast.stepSize
-
-        shadowLooper.runToEndOfTasks()
-        Thread.sleep(200)
-        shadowLooper.runToEndOfTasks()
-
-        val actualImage = (ivPhoto.drawable as BitmapDrawable?)?.bitmap ?: throw AssertionError(messageNullAfterFilters)
-        val actual = singleColor(actualImage, 90, 80)
-        assertColorsValues(messageWrongValues, expected, actual, marginError)
-    }
-
-    @Test
     fun testShouldCheckDefaultBitmapEdit() {
         slBrightness
         slContrast
-        (ivPhoto.drawable as BitmapDrawable).bitmap // null checked on initialization
+        ivPhoto
 
         val expected = Triple(141, 210, 255)
 
@@ -158,14 +137,84 @@ class Stage4UnitTest {
 
         val actualImage = (ivPhoto.drawable as BitmapDrawable?)?.bitmap ?: throw AssertionError(messageNullAfterFilters)
         val actual = singleColor(actualImage, 90, 80)
-        assertColorsValues(messageWrongValues, expected, actual, marginError)
+        assertColorsValues("$messageWrongValues For x=90, y=80", expected, actual, marginError)
+    }
+
+    @Test
+    fun testShouldCheckDefaultBitmapEdit2() {
+        slBrightness
+        slContrast
+        ivPhoto
+        val expected = Triple(149, 177, 205)
+
+        slBrightness.value += slBrightness.stepSize
+        slBrightness.value += slBrightness.stepSize
+        slContrast.value -= slContrast.stepSize
+
+        shadowLooper.runToEndOfTasks()
+        Thread.sleep(200)
+        shadowLooper.runToEndOfTasks()
+
+        val actualImage = (ivPhoto.drawable as BitmapDrawable?)?.bitmap ?: throw AssertionError(messageNullAfterFilters)
+        val actual = singleColor(actualImage, 90, 80)
+        assertColorsValues("$messageWrongValues For x=90, y=80", expected, actual, marginError)
+    }
+
+    @Test
+    fun testShouldCheckDefaultBitmapEditWiderSample() {
+        slBrightness
+        slContrast
+        ivPhoto
+
+        val sample = listOf(
+            10 to 40,
+            30 to 99,
+            150 to 32,
+            99 to 20,
+            10 to 50,
+            190 to 0,
+            5 to 60,
+            70 to 90,
+            0 to 0,
+            30 to 80
+        )
+        val expected = listOf(
+            Triple(0, 118, 232),
+            Triple(3, 253, 184),
+            Triple(49, 100, 255),
+            Triple(161, 72, 161),
+            Triple(0, 141, 255),
+            Triple(141, 26, 255),
+            Triple(0, 164, 255),
+            Triple(95, 232, 255),
+            Triple(0, 26, 118),
+            Triple(3, 210, 141),
+        )
+
+        slBrightness.value += slBrightness.stepSize
+        slContrast.value += slContrast.stepSize * 9
+        slContrast.value += slContrast.stepSize
+
+        shadowLooper.runToEndOfTasks()
+        Thread.sleep(200)
+        shadowLooper.runToEndOfTasks()
+
+        val actualImage = (ivPhoto.drawable as BitmapDrawable?)?.bitmap ?: throw AssertionError(messageNullAfterFilters)
+
+        for(i in sample.indices) {
+            val point = sample[i]
+            val actual = singleColor(actualImage, point.first, point.second)
+            assertColorsValues("$messageWrongValues For x=${point.first}, y=${point.second}",
+                expected[i], actual, marginError
+            )
+        }
     }
 
     @Test
     fun testOrderOfSlidersEventsShouldNotMatter() {
         slBrightness
         slContrast
-        (ivPhoto.drawable as BitmapDrawable).bitmap // null checked on initialization
+        ivPhoto
         val expected = Triple(141, 210, 255)
         val wrongExpected = Triple(140, 170, 200)  //happens if brightness slider ignores contrast value
 
@@ -182,7 +231,7 @@ class Stage4UnitTest {
         val messageWrongOrder =
             if(actual == wrongExpected) " Order of slider events should not matter."
             else ""
-        assertColorsValues(messageWrongValues + messageWrongOrder, expected, actual, marginError)
+        assertColorsValues("$messageWrongValues $messageWrongOrder For x=90, y=80", expected, actual, marginError)
     }
 
     private fun singleColor(source: Bitmap, x:Int = 70, y:Int = 60): Triple<Int, Int, Int> {
