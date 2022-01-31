@@ -84,7 +84,7 @@ object BitmapFilters {
             }
         }
 
-//        val red = updateValue(oldRed + value - 50)   // should produce "Wrong values after filters been applied. expected: <(__, __, __)> actual: <(__, __, __)>"
+//        val red = updateValue(oldRed + value - 50)   // should produce "Wrong values after filters been applied. For x=_, y=_ expected: <(__, __, __)> actual: <(__, __, __)>"
         val red = updateValue(oldRed + value)
         val blue = updateValue(oldBlue + value)
         val green = updateValue(oldGreen + value)
@@ -111,7 +111,7 @@ object BitmapFilters {
             }
         }
 
-//        val red = updateValue(oldRed - 50)   // should produce "Wrong values after filters been applied. expected: <(__, __, __)> actual: <(__, __, __)>"
+//        val red = updateValue(oldRed - 50)   // should produce "Wrong values after filters been applied. For x=_, y=_ expected: <(__, __, __)> actual: <(__, __, __)>"
         val red = updateValue(oldRed)
         val blue = updateValue(oldBlue)
         val green = updateValue(oldGreen)
@@ -137,7 +137,7 @@ object BitmapFilters {
             }
         }
 
-//        val red = updateValue(oldRed - 50)   // should produce "Wrong values after filters been applied. expected: <(__, __, __)> actual: <(__, __, __)>"
+//        val red = updateValue(oldRed - 50)   // should produce "Wrong values after filters been applied. For x=_, y=_ expected: <(__, __, __)> actual: <(__, __, __)>"
         val red = updateValue(oldRed)
         val blue = updateValue(oldBlue)
         val green = updateValue(oldGreen)
@@ -162,7 +162,7 @@ object BitmapFilters {
             }
         }
 
-//        val red = updateValue(oldRed - 50)   // should produce "Wrong values after filters been applied. expected: <(__, __, __)> actual: <(__, __, __)>"
+//        val red = updateValue(oldRed - 50)   // should produce "Wrong values after filters been applied. For x=_, y=_ expected: <(__, __, __)> actual: <(__, __, __)>"
         val red = updateValue(oldRed)
         val blue = updateValue(oldBlue)
         val green = updateValue(oldGreen)

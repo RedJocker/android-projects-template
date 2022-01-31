@@ -3,6 +3,7 @@ package org.hyperskill.photoeditor
 import android.app.Activity
 import android.content.Intent
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.graphics.drawable.BitmapDrawable
 import android.os.Bundle
@@ -56,9 +57,10 @@ class MainActivity : AppCompatActivity() {
         setListener()
 
         //do not change this line
-        currentImage.setImageBitmap(createBitmap())         // commenting this line should produce "Initial image was null, it should be set with ___.setImageBitmap(createBitmap())"
-//        currentImage.setImageBitmap(createBitmap().scale(10, 100))  // should produce "Is defaultBitmap set correctly? Width expected:<200> but was:<10>"
-//        currentImage.setImageBitmap(createBitmap().scale(200, 10))  // should produce "Is defaultBitmap set correctly? Height expected:<100> but was:<10>"
+        currentImage.setImageBitmap(createBitmap())      // commenting out this line should produce "Initial image was null, it should be set with ___.setImageBitmap(createBitmap())"
+//        currentImage.setImageBitmap(createBitmap().scale(10, 100))  // should produce "Is defaultBitmap set correctly? It should be set with ___.setImageBitmap(createBitmap())"
+//        currentImage.setImageBitmap(createBitmap().scale(200, 10))  // should produce "Is defaultBitmap set correctly? It should be set with ___.setImageBitmap(createBitmap())"
+//        currentImage.setImageBitmap(BitmapFactory.decodeResource(this.resources, R.drawable.myexample).scale(200, 100))  // should produce "Is defaultBitmap set correctly? It should be set with ___.setImageBitmap(createBitmap())"
         //
         currentImageDrawable = currentImage.drawable as BitmapDrawable?
     }
@@ -76,7 +78,7 @@ class MainActivity : AppCompatActivity() {
             val copy = bitmap.copy(Bitmap.Config.RGB_565, true)
             val height = bitmap.height
             val width = bitmap.width
-            val intValue = value.toInt() // + 200  // should produce "Wrong values after brightness applied. expected <(__, __, __)> actual <(__, __, __)>"
+            val intValue = value.toInt()  // + 200  // should produce Wrong values after brightness applied. For x=_, y=_ expected: <(__, __, __)> actual: <(__, __, __)>
 
             for(y in 0 until height) {
                 for(x in 0 until width) {
@@ -100,6 +102,7 @@ class MainActivity : AppCompatActivity() {
                         else -> oldGreen + intValue
                     }
                     copy[x, y] = Color.rgb(red, green, blue)
+//                    if(x == 15 && y == 15) { copy[x, y] = Color.rgb(red - 50, green ,blue) } // Wrong values after brightness applied. For x=15, y=15 expected: <(__, __, __)> actual: <(__, __, __)>
                 }
             }
             currentImage.setImageBitmap(copy)

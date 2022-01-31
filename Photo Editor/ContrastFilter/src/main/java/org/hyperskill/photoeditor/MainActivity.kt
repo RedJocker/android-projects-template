@@ -19,6 +19,7 @@ import android.provider.MediaStore.Images
 
 import android.content.ContentValues
 import android.content.pm.PackageManager
+import android.graphics.BitmapFactory
 import android.os.Build
 import android.util.Log
 import androidx.core.content.PermissionChecker
@@ -82,7 +83,10 @@ class MainActivity : AppCompatActivity() {
         setListener()
 
         //do not change this line
-        currentImage.setImageBitmap(createBitmap())     // commenting this line should produce "Initial image was null, it should be set with ___.setImageBitmap(createBitmap())"
+        currentImage.setImageBitmap(createBitmap())      // commenting out this line should produce "Initial image was null, it should be set with ___.setImageBitmap(createBitmap())"
+//        currentImage.setImageBitmap(createBitmap().scale(10, 100))  // should produce "Is defaultBitmap set correctly? It should be set with ___.setImageBitmap(createBitmap())"
+//        currentImage.setImageBitmap(createBitmap().scale(200, 10))  // should produce "Is defaultBitmap set correctly? It should be set with ___.setImageBitmap(createBitmap())"
+//        currentImage.setImageBitmap(BitmapFactory.decodeResource(this.resources, R.drawable.myexample).scale(200, 100))  // should produce "Is defaultBitmap set correctly? It should be set with ___.setImageBitmap(createBitmap())"
         //
 
         currentOriginalImageDrawable = currentImage.drawable as BitmapDrawable?
@@ -118,7 +122,7 @@ class MainActivity : AppCompatActivity() {
         }
 /*
           //case when brightnessSlider ignores contrastSlider values
-         //should produce error "Wrong values after filters been applied. Order of slider events should not matter. expected: <(_, _, _)> actual: <(_, _, _)>"
+         //should produce error "Wrong values after filters been applied.  Order of slider events should not matter. For x=90, y=80 expected: <(141, 210, 255)> actual: <(140, 170, 200)>"
         brightnessSlider.addOnChangeListener { slider, sliderValue, fromUser ->
             val bitmap = currentOriginalImageDrawable?.bitmap ?: return@addOnChangeListener
             val brightnessValue = sliderValue.toInt()
@@ -142,7 +146,7 @@ class MainActivity : AppCompatActivity() {
             currentImage.setImageBitmap(contrastedCopy)
         }
 
-        // comment both .addOnChangeListener below to test case above     */
+        // comment both .addOnChangeListener below to test case above       */
         brightnessSlider.addOnChangeListener(this::onSliderChanges)
         contrastSlider.addOnChangeListener(this::onSliderChanges)
     }
@@ -154,7 +158,7 @@ class MainActivity : AppCompatActivity() {
         val brightenCopy = bitmap.brightenCopy(brightnessValue)
 
         val contrastValue = contrastSlider.value.toInt()
-//        val averageBrightness = bitmap.calculateBrightnessMean()          // average with values before brightness filter, should produce "Wrong values after filters been applied. expected: <(__, __, __)> actual: <(__, __, __)>"
+//        val averageBrightness = bitmap.calculateBrightnessMean()          // average with values before brightness filter, should produce "Wrong values after filters been applied. For x=_, y=_ expected: <(__, __, __)> actual: <(__, __, __)>"
         val averageBrightness = brightenCopy.calculateBrightnessMean()     // average with values after brightness filter
         val contrastedCopy = brightenCopy.contrastedCopy(contrastValue, averageBrightness)
 

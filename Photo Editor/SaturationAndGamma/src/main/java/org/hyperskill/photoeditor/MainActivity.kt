@@ -18,9 +18,11 @@ import android.provider.MediaStore.Images
 
 import android.content.ContentValues
 import android.content.pm.PackageManager
+import android.graphics.BitmapFactory
 import android.os.Build
 import android.util.Log
 import androidx.core.content.PermissionChecker
+import androidx.core.graphics.scale
 
 import org.hyperskill.photoeditor.BitmapFilters.brightenCopy
 import org.hyperskill.photoeditor.BitmapFilters.calculateBrightnessMean
@@ -100,7 +102,10 @@ class MainActivity : AppCompatActivity() {
         setListener()
 
         //do not change this line
-        currentImage.setImageBitmap(createBitmap())
+        currentImage.setImageBitmap(createBitmap())      // commenting out this line should produce "Initial image was null, it should be set with ___.setImageBitmap(createBitmap())"
+//        currentImage.setImageBitmap(createBitmap().scale(10, 100))  // should produce "Is defaultBitmap set correctly? It should be set with ___.setImageBitmap(createBitmap())"
+//        currentImage.setImageBitmap(createBitmap().scale(200, 10))  // should produce "Is defaultBitmap set correctly? It should be set with ___.setImageBitmap(createBitmap())"
+//        currentImage.setImageBitmap(BitmapFactory.decodeResource(this.resources, R.drawable.myexample).scale(200, 100))  // should produce "Is defaultBitmap set correctly? It should be set with ___.setImageBitmap(createBitmap())"
         //
 
         currentOriginalImageDrawable = currentImage.drawable as BitmapDrawable?
@@ -149,19 +154,19 @@ class MainActivity : AppCompatActivity() {
         val brightenCopy = bitmap.brightenCopy(brightnessValue)
 
         val contrastValue = contrastSlider.value.toInt()
-//        val averageBrightness = bitmap.calculateBrightnessMean()       // average on initial image
+//        val averageBrightness = bitmap.calculateBrightnessMean()       // average on initial image  // should produce "Wrong values after filters been applied. For x=_, y=_ expected: <(__, __, __)> actual: <(__, __, __)>"
         val averageBrightness = brightenCopy.calculateBrightnessMean()  // average after previous filters applied
         val contrastedCopy = brightenCopy.contrastedCopy(contrastValue, averageBrightness)
 
         val saturationValue = saturationSlider.value.toInt()
-//        val saturatedCopy = contrastedCopy.saturatedCopy(saturationValue, bitmap)          // average on initial image
+//        val saturatedCopy = contrastedCopy.saturatedCopy(saturationValue, bitmap)          // average on initial image  // should produce "Wrong values after filters been applied. For x=_, y=_ expected: <(__, __, __)> actual: <(__, __, __)>"
         val saturatedCopy = contrastedCopy.saturatedCopy(saturationValue, contrastedCopy)   // average after previous filters applied
 
         val gammaValue = gammaSlider.value
         val gammaCopy = saturatedCopy.gammaCopy(gammaValue)
 
         currentImage.setImageBitmap(gammaCopy)
-//        currentImage.setImageBitmap(bitmap)        // should produce "Wrong values after filters been applied. expected: <(56, 86, 98)> actual: <(__, __, __)>"
+//        currentImage.setImageBitmap(bitmap)        // should produce "Wrong values after filters been applied. For x=_, y=_ expected: <(__, __, __)> actual: <(__, __, __)>"
 //        currentImage.setImageBitmap(null)         // should produce "Image was null after filters been applied"
     }
 

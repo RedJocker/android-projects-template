@@ -6,6 +6,7 @@ import android.content.ContentValues
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.graphics.drawable.BitmapDrawable
 import android.net.Uri
@@ -69,9 +70,10 @@ class MainActivity : AppCompatActivity() {
         setListener()
 
         //do not change this line
-        currentImage.setImageBitmap(createBitmap())         // commenting this line should produce "Initial image was null, it should be set with ___.setImageBitmap(createBitmap())"
-//        currentImage.setImageBitmap(createBitmap().scale(10, 100))  // should produce "Is defaultBitmap set correctly? Width expected:<200> but was:<10>"
-//        currentImage.setImageBitmap(createBitmap().scale(200, 10))  // should produce "Is defaultBitmap set correctly? Height expected:<100> but was:<10>"
+        currentImage.setImageBitmap(createBitmap())      // commenting out this line should produce "Initial image was null, it should be set with ___.setImageBitmap(createBitmap())"
+//        currentImage.setImageBitmap(createBitmap().scale(10, 100))  // should produce "Is defaultBitmap set correctly? It should be set with ___.setImageBitmap(createBitmap())"
+//        currentImage.setImageBitmap(createBitmap().scale(200, 10))  // should produce "Is defaultBitmap set correctly? It should be set with ___.setImageBitmap(createBitmap())"
+//        currentImage.setImageBitmap(BitmapFactory.decodeResource(this.resources, R.drawable.myexample).scale(200, 100))  // should produce "Is defaultBitmap set correctly? It should be set with ___.setImageBitmap(createBitmap())"
         //
 
         currentOriginalImageDrawable = currentImage.drawable as BitmapDrawable?
@@ -123,6 +125,8 @@ class MainActivity : AppCompatActivity() {
             for(y in 0 until height) {
                 for(x in 0 until width) {
                     copy[x, y] = bitmap.brightenPixel(x, y, intValue)
+//                    if(x == 15 && y == 15) { copy[x, y] = bitmap.brightenPixel(x, y, intValue + 20) } // Wrong values after brightness applied. For x=15, y=15 expected: <(__, __, __)> actual: <(__, __, __)>
+
                 }
             }
             currentImage.setImageBitmap(copy)

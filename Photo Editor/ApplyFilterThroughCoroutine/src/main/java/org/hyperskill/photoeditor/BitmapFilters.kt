@@ -145,6 +145,7 @@ object BitmapFilters {
 //            println("saturation R $red, G $green, B $blue : u $pixelRgbAverage, alpha2 $alpha")
 //        }
 
+//        if(x==15 && y==41) return Color.rgb(0, 0, 0) // should produce Wrong values after filters been applied. For x=15, y=41 expected: <(0, 180, 255)> actual: <(0, 0, 0)>
         return Color.rgb(red, green, blue)
     }
 
