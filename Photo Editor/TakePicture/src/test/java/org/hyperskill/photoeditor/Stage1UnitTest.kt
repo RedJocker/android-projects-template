@@ -23,7 +23,7 @@ import org.robolectric.Shadows.shadowOf
 import java.lang.NullPointerException
 import kotlin.AssertionError
 
-// version 0.3
+// version 0.4
 @RunWith(RobolectricTestRunner::class)
 class Stage1UnitTest {
 
@@ -44,15 +44,14 @@ class Stage1UnitTest {
 
     private fun testShouldCheckImageIsSetToDefaultBitmap(ivPhoto: ImageView) {
         val messageInitialImageNull = "Initial image was null, it should be set with ___.setImageBitmap(createBitmap())"
-        val messageWrongInitialImage = "Is defaultBitmap set correctly?"
+        val messageWrongInitialImage = "Is defaultBitmap set correctly? It should be set with ___.setImageBitmap(createBitmap())"
         val actualBitmap = (ivPhoto.drawable as BitmapDrawable?)?.bitmap ?: throw AssertionError(
             messageInitialImageNull
         )
-        assertEquals("$messageWrongInitialImage Width", 200, actualBitmap.width)
-        assertEquals("$messageWrongInitialImage Height", 100, actualBitmap.height)
-
+        assertTrue(messageWrongInitialImage, 200 == actualBitmap.width)
+        assertTrue(messageWrongInitialImage, 100 == actualBitmap.height)
         val expectedRgb = Triple(110, 140, 150)
-        assertEquals("$messageWrongInitialImage Rgb", expectedRgb, singleColor(actualBitmap))
+        assertTrue(messageWrongInitialImage, expectedRgb == singleColor(actualBitmap))
     }
 
     private fun testShouldCheckButton(btn: Button, expectedInitialText: String, btnName: String) {
