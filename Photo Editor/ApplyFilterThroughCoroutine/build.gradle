@@ -52,6 +52,8 @@ dependencies {
 
     testImplementation "androidx.arch.core:core-testing:2.1.0"
 
+    testImplementation project(':Photo_Editor-Common')
+
 
     rootProject.ext.commonDependencies.each { dependency ->
         add("implementation", dependency.value)
