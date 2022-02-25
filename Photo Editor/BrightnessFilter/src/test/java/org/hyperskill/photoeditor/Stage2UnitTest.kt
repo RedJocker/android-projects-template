@@ -177,6 +177,10 @@ class Stage2UnitTest {
     fun testShouldCheckNewBitmapEdit() {
         ivPhoto // initializes variable and perform initialization assertions
         slBrightness
+
+        val initialImage2 = (ivPhoto.drawable as BitmapDrawable?)?.bitmap ?: throw AssertionError("abc")
+        val (initialRed2, initialGreen2, initialBlue2) = singleColor(initialImage2)
+
         btnGallery.performClick()
         shadowLooper.runToEndOfTasks()
 
@@ -203,7 +207,7 @@ class Stage2UnitTest {
         shadowLooper.runToEndOfTasks()
 
         val initialImage = (ivPhoto.drawable as BitmapDrawable?)?.bitmap ?: throw AssertionError(messageNullAfterLoading)
-        val (initialRed, initialGreen, initialBlue) = singleColor(initialImage)
+        val (initialRed, initialGreen, initialBlue) = singleColor(initialImage, 80, 90)
         val expectedRgb = Triple(initialRed + 50, initialGreen + 50, initialBlue + 50)
 
         slBrightness.value += slBrightness.stepSize * 3

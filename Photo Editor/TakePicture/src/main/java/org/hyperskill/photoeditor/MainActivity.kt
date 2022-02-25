@@ -29,7 +29,7 @@ class MainActivity : AppCompatActivity() {
             if (result.resultCode == Activity.RESULT_OK) {
                 val uri = result.data?.data ?: return@registerForActivityResult
                 currentImage.setImageURI(uri)
-                currentImage.setImageBitmap(null)                        //  should produce "Image was null after loading from gallery"
+//                currentImage.setImageBitmap(null)                        //  should produce "Image was null after loading from gallery"
             }
         }
 
