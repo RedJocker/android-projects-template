@@ -203,7 +203,7 @@ class Stage2UnitTest {
         shadowLooper.runToEndOfTasks()
 
         val initialImage = (ivPhoto.drawable as BitmapDrawable?)?.bitmap ?: throw AssertionError(messageNullAfterLoading)
-        val (initialRed, initialGreen, initialBlue) = singleColor(initialImage)
+        val (initialRed, initialGreen, initialBlue) = singleColor(initialImage, 80, 90)
         val expectedRgb = Triple(initialRed + 50, initialGreen + 50, initialBlue + 50)
 
         slBrightness.value += slBrightness.stepSize * 3
