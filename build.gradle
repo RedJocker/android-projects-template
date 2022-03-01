@@ -15,7 +15,7 @@ buildscript {
     }
 
     dependencies {
-        classpath "com.github.hyperskill:hs-gradle-plugin:android-update-SNAPSHOT"
+        classpath 'com.github.hyperskill:hs-gradle-plugin:android-update-SNAPSHOT'
         classpath "com.android.tools.build:gradle:$androidGradleVersion"
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinGradleVersion"
     }
@@ -34,7 +34,7 @@ allprojects {
     }
 
     afterEvaluate {
-        if (extensions.findByName("android") != null) {
+        if (extensions.findByName('android') != null) {
             android {
                 testOptions {
                     unitTests {
@@ -43,19 +43,17 @@ allprojects {
                 }
 
                 defaultConfig {
-                    testInstrumentationRunner "com.edu.AndroidEduTestRunner"
+                    testInstrumentationRunner 'com.edu.AndroidEduTestRunner'
                 }
 
-                compileOptions {
-                    sourceCompatibility "1.8"
-                    targetCompatibility "1.8"
-                }
             }
 
             dependencies {
-               def robolectric = hs.android.robolectricVersion
+                def robolectric = hs.android.robolectricVersion
                 testImplementation "org.robolectric:robolectric:$robolectric"
-                testImplementation 'junit:junit:4.13.2'
+
+                def junit = hs.android.lib.junit
+                testImplementation "junit:junit:$junit"
             }
         }
     }
