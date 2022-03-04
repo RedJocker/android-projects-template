@@ -45,7 +45,6 @@ allprojects {
                 defaultConfig {
                     testInstrumentationRunner 'com.edu.AndroidEduTestRunner'
                 }
-
             }
 
             dependencies {
@@ -54,12 +53,9 @@ allprojects {
 
                 def junit = hs.android.lib.junit
                 testImplementation "junit:junit:$junit"
+
+                testImplementation project(':util')
             }
         }
     }
-}
-
-// TODO decide if keep below task or delete it
-task clean(type: Delete) {
-    delete rootProject.buildDir
 }

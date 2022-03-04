@@ -4,15 +4,11 @@ import android.app.Activity
 import android.content.ContentResolver
 import android.content.Context
 import android.content.Intent
-import android.graphics.Bitmap
-import android.graphics.Color
-import android.graphics.drawable.BitmapDrawable
 import android.net.Uri
 import android.os.Looper
 import android.provider.MediaStore
 import android.widget.Button
 import android.widget.ImageView
-import org.hyperskill.photoeditor.TestUtils.findViewByString
 import org.junit.Assert.*
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -23,7 +19,11 @@ import org.robolectric.Shadows.shadowOf
 import java.lang.NullPointerException
 import kotlin.AssertionError
 
-// version 0.4
+import org.hyperskill.util.TestUtils.findViewByString
+import org.hyperskill.util.TestUtils.testShouldCheckButton
+import org.hyperskill.util.TestUtils.testShouldCheckImageIsSetToDefaultBitmap
+
+// version 0.5
 @RunWith(RobolectricTestRunner::class)
 class Stage1UnitTest {
 
@@ -33,32 +33,13 @@ class Stage1UnitTest {
     private val activity = activityController.setup().get()
 
     private val ivPhoto by lazy { activity.findViewByString<ImageView>("ivPhoto")
-        .also(this::testShouldCheckImageIsSetToDefaultBitmap)
+        .also(::testShouldCheckImageIsSetToDefaultBitmap)
     }
     private val btnGallery by lazy { activity.findViewByString<Button>("btnGallery")
         .also { testShouldCheckButton(it, "GALLERY", "btnGallery") }
     }
     private val shadowActivity: ShadowActivity by lazy { shadowOf(activity) }
 
-
-
-    private fun testShouldCheckImageIsSetToDefaultBitmap(ivPhoto: ImageView) {
-        val messageInitialImageNull = "Initial image was null, it should be set with ___.setImageBitmap(createBitmap())"
-        val messageWrongInitialImage = "Is defaultBitmap set correctly? It should be set with ___.setImageBitmap(createBitmap())"
-        val actualBitmap = (ivPhoto.drawable as BitmapDrawable?)?.bitmap ?: throw AssertionError(
-            messageInitialImageNull
-        )
-        assertTrue(messageWrongInitialImage, 200 == actualBitmap.width)
-        assertTrue(messageWrongInitialImage, 100 == actualBitmap.height)
-        val expectedRgb = Triple(110, 140, 150)
-        assertTrue(messageWrongInitialImage, expectedRgb == singleColor(actualBitmap))
-    }
-
-    private fun testShouldCheckButton(btn: Button, expectedInitialText: String, btnName: String) {
-        assertEquals("Wrong text for $btnName",
-            expectedInitialText.toUpperCase(), btn.text.toString().toUpperCase()
-        )
-    }
 
     @Test
     fun testShouldCheckImageView() {
@@ -128,15 +109,5 @@ class Stage1UnitTest {
                     + '/' + context.resources.getResourceTypeName(drawableId)
                     + '/' + context.resources.getResourceEntryName(drawableId)
         )
-    }
-
-    private fun singleColor(source: Bitmap, x: Int = 70, y: Int = 60): Triple<Int, Int, Int> {
-        val pixel = source.getPixel(x, y)
-
-        val red = Color.red(pixel)
-        val green = Color.green(pixel)
-        val blue = Color.blue(pixel)
-
-        return  Triple(red,green,blue)
     }
 }

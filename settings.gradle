@@ -16,8 +16,6 @@ static String sanitizeName(String name) {
     return name.replaceAll("[ /\\\\:<>\"?*|()]", "_").replaceAll("(^[.]+)|([.]+\$)", "")
 }
 
-//rootProject.name = 'Photo Editor' // TODO decide if keep this line or delete it
-
 rootProject.projectDir.eachDirRecurse {
     if (!isTaskDir(it) || it.path.contains(".idea")) {
         return
@@ -37,5 +35,3 @@ rootProject.projectDir.eachDirRecurse {
 def isTaskDir(File dir) {
     return new File(dir, "src").exists()
 }
-
-include 'util'

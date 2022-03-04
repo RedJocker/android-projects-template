@@ -1,15 +1,10 @@
 package org.hyperskill.photoeditor
 
-import android.graphics.Bitmap
-import android.graphics.Color
 import android.graphics.drawable.BitmapDrawable
 import android.os.Looper
 import android.widget.Button
 import android.widget.ImageView
 import com.google.android.material.slider.Slider
-import org.hyperskill.photoeditor.TestUtils.assertColorsValues
-import org.hyperskill.photoeditor.TestUtils.findViewByString
-import org.junit.Assert.*
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.Robolectric
@@ -19,7 +14,14 @@ import org.robolectric.shadows.ShadowActivity
 import org.robolectric.shadows.ShadowLooper
 import kotlin.AssertionError
 
-// version 0.4
+import org.hyperskill.util.TestUtils.findViewByString
+import org.hyperskill.util.TestUtils.extractPixelRgb
+import org.hyperskill.util.TestUtils.testShouldCheckButton
+import org.hyperskill.util.TestUtils.testShouldCheckImageIsSetToDefaultBitmap
+import org.hyperskill.util.TestUtils.testShouldCheckSlider
+import org.hyperskill.util.TestUtils.assertColorsValues
+
+// version 0.5
 @RunWith(RobolectricTestRunner::class)
 class Stage4UnitTest {
 
@@ -33,7 +35,7 @@ class Stage4UnitTest {
     private val shadowLooper: ShadowLooper by lazy { Shadows.shadowOf(Looper.getMainLooper()) }
 
     private val ivPhoto by lazy { activity.findViewByString<ImageView>("ivPhoto")
-        .also(this::testShouldCheckImageIsSetToDefaultBitmap)
+        .also(::testShouldCheckImageIsSetToDefaultBitmap)
     }
     private val btnGallery by lazy { activity.findViewByString<Button>("btnGallery")
         .also { testShouldCheckButton(it, "GALLERY", "btnGallery") }
@@ -46,42 +48,6 @@ class Stage4UnitTest {
     }
     private val slContrast by lazy { activity.findViewByString<Slider>("slContrast")
         .also { testShouldCheckSlider(it, "slContrast") }
-    }
-
-
-    private fun testShouldCheckImageIsSetToDefaultBitmap(ivPhoto: ImageView) {
-        val messageInitialImageNull = "Initial image was null, it should be set with ___.setImageBitmap(createBitmap())"
-        val messageWrongInitialImage = "Is defaultBitmap set correctly? It should be set with ___.setImageBitmap(createBitmap())"
-        val actualBitmap = (ivPhoto.drawable as BitmapDrawable?)?.bitmap ?: throw AssertionError(
-            messageInitialImageNull
-        )
-        assertTrue(messageWrongInitialImage, 200 == actualBitmap.width)
-        assertTrue(messageWrongInitialImage, 100 == actualBitmap.height)
-        val expectedRgb = Triple(110, 140, 150)
-        assertTrue(messageWrongInitialImage, expectedRgb == singleColor(actualBitmap))
-    }
-
-    private fun testShouldCheckButton(btn: Button, expectedInitialText: String, btnName: String) {
-        assertEquals("Wrong text for $btnName",
-            expectedInitialText.toUpperCase(), btn.text.toString().toUpperCase()
-        )
-    }
-
-    private fun testShouldCheckSlider(
-        slBrightness: Slider, sliderName: String, expectedStepSize: Float = 10f ,
-        expectedValueFrom: Float = -250f, expectedValueTo: Float = 250f, expectedValue: Float = 0f) {
-
-        val message1 = "\"$sliderName\" should have proper stepSize attribute"
-        assertEquals(message1, expectedStepSize, slBrightness.stepSize)
-
-        val message2 = "\"$sliderName\" should have proper valueFrom attribute"
-        assertEquals(message2, expectedValueFrom, slBrightness.valueFrom)
-
-        val message3 = "\"$sliderName\" should have proper valueTo attribute"
-        assertEquals(message3, expectedValueTo, slBrightness.valueTo)
-
-        val message4 = "\"$sliderName\" should have proper initial value"
-        assertEquals(message4, expectedValue, slBrightness.value)
     }
 
     @Test
@@ -136,7 +102,7 @@ class Stage4UnitTest {
         shadowLooper.runToEndOfTasks()
 
         val actualImage = (ivPhoto.drawable as BitmapDrawable?)?.bitmap ?: throw AssertionError(messageNullAfterFilters)
-        val actual = singleColor(actualImage, 90, 80)
+        val actual = extractPixelRgb(actualImage, 90, 80)
         assertColorsValues("$messageWrongValues For x=90, y=80", expected, actual, marginError)
     }
 
@@ -156,7 +122,7 @@ class Stage4UnitTest {
         shadowLooper.runToEndOfTasks()
 
         val actualImage = (ivPhoto.drawable as BitmapDrawable?)?.bitmap ?: throw AssertionError(messageNullAfterFilters)
-        val actual = singleColor(actualImage, 90, 80)
+        val actual = extractPixelRgb(actualImage, 90, 80)
         assertColorsValues("$messageWrongValues For x=90, y=80", expected, actual, marginError)
     }
 
@@ -203,7 +169,7 @@ class Stage4UnitTest {
 
         for(i in sample.indices) {
             val point = sample[i]
-            val actual = singleColor(actualImage, point.first, point.second)
+            val actual = extractPixelRgb(actualImage, point.first, point.second)
             assertColorsValues("$messageWrongValues For x=${point.first}, y=${point.second}",
                 expected[i], actual, marginError
             )
@@ -227,50 +193,10 @@ class Stage4UnitTest {
         shadowLooper.runToEndOfTasks()
 
         val actualImage = (ivPhoto.drawable as BitmapDrawable?)?.bitmap ?: throw AssertionError(messageNullAfterFilters)
-        val actual = singleColor(actualImage, 90, 80)
+        val actual = extractPixelRgb(actualImage, 90, 80)
         val messageWrongOrder =
             if(actual == wrongExpected) " Order of slider events should not matter."
             else ""
         assertColorsValues("$messageWrongValues $messageWrongOrder For x=90, y=80", expected, actual, marginError)
-    }
-
-    private fun singleColor(source: Bitmap, x:Int = 70, y:Int = 60): Triple<Int, Int, Int> {
-        val pixel = source.getPixel(x, y)
-
-        val red = Color.red(pixel)
-        val green = Color.green(pixel)
-        val blue = Color.blue(pixel)
-
-        return  Triple(red,green,blue)
-    }
-
-    fun createBitmap(): Bitmap {
-        val width = 200
-        val height = 100
-        val pixels = IntArray(width * height)
-        // get pixel array from source
-
-        var R: Int
-        var G: Int
-        var B: Int
-        var index: Int
-
-        for (y in 0 until height) {
-            for (x in 0 until width) {
-                // get current index in 2D-matrix
-                index = y * width + x
-                // get color
-                R = x % 100 + 40
-                G = y % 100 + 80
-                B = (x+y) % 100 + 120
-
-                pixels[index] = Color.rgb(R,G,B)
-
-            }
-        }
-        // output bitmap
-        val bitmapOut = Bitmap.createBitmap(width, height, Bitmap.Config.RGB_565)
-        bitmapOut.setPixels(pixels, 0, width, 0, 0, width, height)
-        return bitmapOut
     }
 }
