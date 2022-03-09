@@ -1,94 +1,42 @@
 <h2>Description</h2>
 
-	<p>
-		In this stage, we will add another filter&nbsp;-&nbsp;<strong>contrast filter</strong>.<br/>
-	</p>
-	<p>
-		A contrast at minimum value means that all pixels have the same brightness value.
-		A contrast at maximum value means that the difference between the
-		darkest and brightest pixel is maximized, that is, one is 0 and the other is 255.<br/>
-	</p>
-	<p>
-		To regulate contrast we must be able to spread/tight up each pixel brightness
-		from the average image brightness. The average brightness is calculated for the whole image,
-		that is, there is only one average brightness for one image.<br/>
-	</p>
-	<p>
-		The Contrast filter isn&#39;t really harder to implement than the brightness filter,
-		but that doesn&#39;t necessarily mean this stage difficulty is the same as stage 2.<br/>
-		The catch is, both filters should affect each other and work at the same time.<br/>
-	</p>
-	<p>
-		Also another filter means we will add&nbsp;yet another slider which will regulate the&nbsp;
-		<strong>contrast value</strong>.&nbsp;
-	</p>
+<p>In this stage, we will add another feature &mdash; the&nbsp;<strong>contrast filter</strong>.</p>
 
-	<p>
-		More info on contrast can be found
-		<a href="https://theailearner.com/2019/01/30/what-is-contrast-in-image-processing/">here</a>
-	</p>
+<p>When the contrast is at the minimum, it means that all pixels have the same brightness value. Maximum contrast infers that the difference between the darkest and brightest pixel is at the maximum: one is <code>0</code>, and the other is <code>255</code>.</p>
+
+<p>To adjust contrast, we must be able to highlight/play down the brightness of each pixel taking into consideration the average image brightness. The average brightness is calculated for the whole image, that is, there is only one average brightness for one image. The catch is, both filters should affect each other and work at the same time.</p>
+
+<p>Adding another filter means another slider that will change the&nbsp;contrast value.</p>
+
+<p>More on contrast can be found in the article&nbsp;<a href="https://theailearner.com/2019/01/30/what-is-contrast-in-image-processing/" rel="noopener noreferrer nofollow">What is Contrast in Image Processing?</a>&nbsp;by&nbsp;TheAILearner.</p>
 
 <h2>Objectives</h2>
 
-	<p>Add the following components to the application layout:</p>
+<p>Add the following components to the application layout:</p>
 
-	<ol>
-		<li><code>Slider</code>&nbsp;widget for specifying the photo&nbsp;<strong>contrast</strong>&nbsp;
-			with the&nbsp;<code>id</code>&nbsp;attribute&nbsp;<code>slContrast</code>;
-			the values range from -250&nbsp;to 250&nbsp;with the step size 10&nbsp;and initial value 0
-		</li>
+<ul>
+	<li>Another&nbsp;<code>Slider</code>&nbsp;widget for specifying the photo&nbsp;contrast.&nbsp;Set its&nbsp;<code>id</code>&nbsp;attribute as&nbsp;<code>slContrast</code>; the values may vary from <code>-250</code>&nbsp;to <code>250</code>&nbsp;with the step size of <code>10</code>&nbsp;and the initial value of <code>0</code>;</li>
+	<li>The contrast filter values&nbsp;are calculated in the following way:</li>
+</ul>
 
-		<li>The contrast filter values&nbsp;can be calculated in the following way:
-			<br/><br/>
+<p><code><span class="math-tex">\[red = alpha \times (Red - avgBright) + avgBright \\ green = alpha \times (Green - avgBright) + avgBright \\ blue = alpha \times (Blue - avgBright) + avgBright\]</span></code></p>
 
-			<p><code>
-				red = alpha * (red - avgBright) + avgBright<br />
-				green = alpha * (green - avgBright) + avgBright<br />
-				blue&nbsp;= alpha * (blue - avgBright) + avgBright
-			</code></p>
-			<br/>
+<p>where:</p>
 
-			<p>where:</p>
-			<br/>
+<p><span class="math-tex">\[alpha = \frac{(255 + contrast)}{(255 - contrast)}\]</span>and:</p>
 
-			<p><code>
-				alpha = (255 + <strong>contrast</strong>)/(255 - <strong>contrast</strong>)<br />
-				avgBright = average image brightness
-			</code></p>
-			<br/>
+<p><span class="math-tex">\[avgBright = the\ average\ image\ brightness\]</span></p>
 
-			<p>and <strong>contrast&nbsp;</strong>is simply the current contrast slider value.</p>
+<p>Contrast is the current state of the slider value. Once again tests allow some margin rounding error; it&#39;s recommended to use <code>ints</code>.</p>
 
-		</li>
+<ul>
+	<li>Order of filters matters. To pass the tests, filters must be applied in the following order: <code>brightnessFilter</code> -&gt; <code>contrastFilter</code>;</li>
+	<li>Color values should not get out of bounds: <code>[-255, 255]</code>;</li>
+	<li>The <code>avgBrightness</code> should be calculated after brightness filter has already been applied.</li>
+</ul>
 
+<h2>Example</h2>
 
-	</ol>
+<p><strong>Example 1:</strong> <em>the contrast slider &amp; the result</em></p>
 
-
-
-	<p>Once again tests allow some margin rounding error, but it&#39;s recommended to use just Ints.</p>
-
-	<p><strong>Now the most&nbsp;crucial part!</strong></p>
-
-	<ol>
-		<li>Order in which filters are applied matters.
-			To pass the tests filters must be applied in the following order:<br/>
-			<code>brightnessFilter -&gt; contrastFilter</code></li>
-		<li>Color values should not get out of bounds [-255, 255]</li>
-		<li>avgBrightness should be calculated after brightness filter has already been applied</li>
-	</ol>
-
-	<br/>
-
-<h2>Examples</h2>
-
-	<p>
-		<img height="520" width="270"  name="image.png"
-			 alt="Example with application view contrast slider at maximum value and brightness a little negative"
-			 src="https://ucarecdn.com/5eed5bef-429d-443e-8830-7965376be9ac/" />
-	</p>
-
-	<p>
-		<img height="520" width="270" name="image.png"
-			 alt="Example with application view contrast slider a little negative and zero brightness"
-			 src="https://ucarecdn.com/e8a54a20-26b7-4bd6-8494-3a1897031718/"  /></p>
+<p><img alt="" height="520" name="Android Emulator - Pixel_3a_API_30_x86_5554 2021-12-05 12-12-03.gif" src="https://ucarecdn.com/024b37ab-7c1d-410d-be19-8031fa1e4835/" width="270" /></p>
