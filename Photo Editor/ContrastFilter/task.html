@@ -19,7 +19,7 @@
 	<li>The contrast filter values&nbsp;are calculated in the following way:</li>
 </ul>
 
-<p><code><span class="math-tex">\[red = alpha \times (Red - avgBright) + avgBright \\ green = alpha \times (Green - avgBright) + avgBright \\ blue = alpha \times (Blue - avgBright) + avgBright\]</span></code></p>
+<p><span class="math-tex">\[red = alpha \times (Red - avgBright) + avgBright \\ green = alpha \times (Green - avgBright) + avgBright \\ blue = alpha \times (Blue - avgBright) + avgBright\]</span></p>
 
 <p>where:</p>
 
@@ -31,7 +31,7 @@
 
 <ul>
 	<li>Order of filters matters. To pass the tests, filters must be applied in the following order: <code>brightnessFilter</code> -&gt; <code>contrastFilter</code>;</li>
-	<li>Color values should not get out of bounds: <code>[-255, 255]</code>;</li>
+	<li>Color values should not get out of bounds: <code>[0, 255]</code>;</li>
 	<li>The <code>avgBrightness</code> should be calculated after brightness filter has already been applied.</li>
 </ul>
 
