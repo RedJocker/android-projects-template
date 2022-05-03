@@ -26,12 +26,13 @@
 	<li>
 		<p>Add a proper onClick method to&nbsp;<code>btnSave</code>. This method should save the
 			current photo to <code>MediaStore.Images.Media.EXTERNAL_CONTENT_URI</code> folder in
-			JPEG format.</p>
+			JPEG format. Use maximum quality for compression.</p>
 	</li>
 
 	<li>
 		Before actually saving content check if you have permission <code>Manifest.permission.WRITE_EXTERNAL_STORAGE</code>.<br/>
 		If you don't have permission request the permission first.
+		Use the value <code>0</code> for requestCode while requiring permission
 	</li>
 
 	<li>

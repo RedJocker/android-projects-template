@@ -1,9 +1,9 @@
 package org.hyperskill.photoeditor
 
 import android.Manifest
+import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import android.graphics.Color
 import android.graphics.drawable.BitmapDrawable
 import android.net.Uri
 import android.os.Looper
@@ -22,6 +22,7 @@ import org.junit.Assert.*
 import org.robolectric.Shadows
 import org.robolectric.Shadows.shadowOf
 import org.robolectric.android.controller.ActivityController
+import org.robolectric.annotation.Config
 import org.robolectric.shadows.ShadowActivity
 import org.robolectric.shadows.ShadowLooper
 import java.io.ByteArrayOutputStream
@@ -110,45 +111,91 @@ class Stage3UnitTest {
     }
 
     @Test
-    fun testShouldCheckSomeNewBitmapIsCreated() {
-        btnSave
+    @Config(shadows = [CustomShadowBitmap::class])
+    fun checkBitmapIsSaved() {
+        CustomShadowBitmap.LastCompressed.init()
+        val expectedUri = Uri.parse(MediaStore.Images.Media.EXTERNAL_CONTENT_URI.toString())
+        val expectedFormat = Bitmap.CompressFormat.JPEG
+        val expectedQuality = 100
+        val expectedBitmap = (ivPhoto.drawable as BitmapDrawable).bitmap.copy(Bitmap.Config.RGB_565, false)
+        val shadowContentResolver = shadowOf(activity.contentResolver)
+
         shadowActivity.grantPermissions(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-
-        val bitmapExpected = (ivPhoto.drawable as BitmapDrawable).bitmap
-        val expectedContent = ByteArrayOutputStream()
-        bitmapExpected.compress(Bitmap.CompressFormat.JPEG, 100, expectedContent)
-
-        val contentResolver = activity.contentResolver
-        val actualContent = ByteArrayOutputStream()
-        val shadowContentResolver = shadowOf(contentResolver)
-        val uri = Uri.parse(MediaStore.Images.Media.EXTERNAL_CONTENT_URI.toString() + "/1").also{
-            shadowLooper.runToEndOfTasks()
-        } ?: throw AssertionError("Test failed to parse Uri")
-        val messageError = "image loaded from $uri had wrong"
-
-        shadowContentResolver.registerOutputStream(uri, actualContent)
         btnSave.performClick()
-        shadowLooper.runToEndOfTasks()
 
-        val bitmapActual = BitmapFactory.decodeByteArray(
-            actualContent.toByteArray(), 0, actualContent.size()
-        )
+        val messageWrongUri = "The uri for saving the image is wrong"
+        val actualUri = shadowContentResolver.insertStatements.last().uri
+        assertEquals(messageWrongUri, expectedUri, actualUri)
 
-        assertEquals("$messageError width", bitmapExpected.width, bitmapActual.width)
-        assertEquals("$messageError height", bitmapExpected.height, bitmapActual.height)
-        assertArrayEquals("$messageError content", expectedContent.toByteArray(), actualContent.toByteArray())
+        val messageWrongFormat = "The image saved had wrong format"
+        val actualFormat = CustomShadowBitmap.LastCompressed.compressedFormat
+        assertEquals(messageWrongFormat, expectedFormat, actualFormat)
+
+        val messageWrongQuality = "The image saved had wrong quality"
+        val actualQuality = CustomShadowBitmap.LastCompressed.compressedQuality
+        assertEquals(messageWrongQuality, expectedQuality, actualQuality)
+
+        val messageWrongBitmap =
+            "Image saved is not the same as the image that was displaying before the click"
+        val actualBitmap = CustomShadowBitmap.LastCompressed.compressedBitmap
+        assertTrue(messageWrongBitmap, expectedBitmap.sameAs(actualBitmap))
     }
 
+    @Test
+    @Config(shadows = [CustomShadowBitmap::class])
+    fun checkBitmapIsSavedAfterPermissionIsGranted() {
+        CustomShadowBitmap.LastCompressed.init()
+        checkPermissionWasAsked()
+
+        val expectedUri = Uri.parse(MediaStore.Images.Media.EXTERNAL_CONTENT_URI.toString())
+        val expectedFormat = Bitmap.CompressFormat.JPEG
+        val expectedQuality = 100
+        val expectedBitmap = (ivPhoto.drawable as BitmapDrawable).bitmap.copy(Bitmap.Config.RGB_565, false)
+        val shadowContentResolver = shadowOf(activity.contentResolver)
+
+        shadowActivity.grantPermissions(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+        activity.onRequestPermissionsResult(
+            0,
+            arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE), arrayOf(
+            PackageManager.PERMISSION_GRANTED).toIntArray()
+        )
+        shadowLooper.runToEndOfTasks()
+
+        val messageWrongUri = "The uri for saving the image is wrong"
+        val actualUri = shadowContentResolver.insertStatements.last().uri
+        assertEquals(messageWrongUri, expectedUri, actualUri)
+
+        val messageWrongFormat = "The image saved had wrong format"
+        val actualFormat = CustomShadowBitmap.LastCompressed.compressedFormat
+        assertEquals(messageWrongFormat, expectedFormat, actualFormat)
+
+        val messageWrongQuality = "The image saved had wrong quality"
+        val actualQuality = CustomShadowBitmap.LastCompressed.compressedQuality
+        assertEquals(messageWrongQuality, expectedQuality, actualQuality)
+
+        val messageWrongBitmap = "Bitmap saved is not the same as the bitmap that was displaying before the click"
+        val actualBitmap = CustomShadowBitmap.LastCompressed.compressedBitmap
+        assertTrue(messageWrongBitmap, expectedBitmap.sameAs(actualBitmap))
+    }
 
     @Test
-    fun testShouldCheckPermission() {
+    fun checkPermissionWasAsked () {
         btnSave
-        val messagePermissionRequired = "Have you asked permission to write?"
         btnSave.performClick()
         shadowLooper.runToEndOfTasks()
+
+        val messagePermissionRequired = "Have you asked permission to write?"
         val permissionRequest = shadowActivity.lastRequestedPermission ?: throw AssertionError(messagePermissionRequired)
-        val hasRequestedPermission = permissionRequest.requestedPermissions.filter { it == Manifest.permission.WRITE_EXTERNAL_STORAGE }.any()
+
+        val hasRequestedPermission =
+            permissionRequest.requestedPermissions.any { it == Manifest.permission.WRITE_EXTERNAL_STORAGE }
         assert(hasRequestedPermission) { messagePermissionRequired }
+
+        val actualRequestCode = permissionRequest.requestCode
+        val expectedRequestCode = 0
+        val messageWrongRequestCode =
+            "Did you use the requestCode stated on description while requiring permissions?"
+        assertEquals(messageWrongRequestCode, expectedRequestCode, actualRequestCode)
     }
 
     @Test

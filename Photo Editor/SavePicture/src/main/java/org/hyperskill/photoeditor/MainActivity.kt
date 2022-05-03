@@ -90,7 +90,7 @@ class MainActivity : AppCompatActivity() {
 
             if(hasPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
                 val bitmap = ((currentImage.drawable as BitmapDrawable?)?.bitmap ?: return@setOnClickListener)
-//                                                                    .scale(30,30)  // produce "image loaded from content://media/external/images/media/1 had wrong width expected:<200> but was:<30>"
+//                                                                    .scale(30,30)  // produce "Bitmap saved is not the same as the bitmap that was displaying before the click"
                 val values = ContentValues()
                 values.put(Images.Media.DATE_TAKEN, System.currentTimeMillis())
                 values.put(Images.Media.MIME_TYPE, "image/jpeg")
@@ -103,11 +103,13 @@ class MainActivity : AppCompatActivity() {
 
 //                val uri = this@MainActivity.contentResolver.insert(
 //                    Uri.parse(Images.Media.EXTERNAL_CONTENT_URI.toString() + "/1"), values
-//                ) ?: return@setOnClickListener                                     // produce "image loaded from content://media/external/images/media/1 had wrong width expected:<200> but was:<100>"
+//                ) ?: return@setOnClickListener                                     // produce "The uri for saving the image is wrong expected:<content://media/external/images/media> but was:<content://media/external/images/media/1>"
 
                 contentResolver.openOutputStream(uri).use {
                     bitmap.compress(Bitmap.CompressFormat.JPEG, 100, it)
-                    //bitmap.compress(Bitmap.CompressFormat.PNG, 100, it)    // produce "image loaded from content://media/external/images/media/1 had wrong content: array lengths differed, expected.length=993 actual.length=2668;"
+//                    bitmap.compress(Bitmap.CompressFormat.JPEG, 50, it) // produce "The image saved had wrong quality expected:<100> but was:<50>"
+//                    bitmap.compress(Bitmap.CompressFormat.PNG, 100, it)    // produce "The image saved had wrong format expected:<JPEG> but was:<PNG>"
+//                    bitmap.copy(Bitmap.Config.RGB_565, true).also{ b-> b[50, 50] = 600 }.compress(Bitmap.CompressFormat.JPEG, 100, it) // produce "Image saved is not the same as the image that was displaying before the click"
                 }
             } else {
                 requestPermissions(listOf(Manifest.permission.WRITE_EXTERNAL_STORAGE))   // commenting should produce "Have you asked permission to write?"
