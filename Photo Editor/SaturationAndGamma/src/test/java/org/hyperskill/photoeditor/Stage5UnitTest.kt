@@ -71,7 +71,7 @@ class Stage5UnitTest {
 
     private fun testShouldCheckButton(btn: Button, expectedInitialText: String, btnName: String) {
         assertEquals("Wrong text for $btnName",
-            expectedInitialText.toUpperCase(), btn.text.toString().toUpperCase()
+            expectedInitialText.uppercase(), btn.text.toString().uppercase()
         )
     }
 
