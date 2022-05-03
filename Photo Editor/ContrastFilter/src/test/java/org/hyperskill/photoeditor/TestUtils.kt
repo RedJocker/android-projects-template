@@ -1,6 +1,12 @@
 package org.hyperskill.photoeditor
 
 import android.app.Activity
+import android.content.ContentResolver
+import android.content.Context
+import android.content.Intent
+import android.graphics.Bitmap
+import android.graphics.Color
+import android.net.Uri
 import android.view.View
 import org.junit.Assert
 import kotlin.math.abs
@@ -35,5 +41,31 @@ object TestUtils {
         Assert.assertTrue(messageWrongValues, abs(expectedRed - actualRed) <= marginError)
         Assert.assertTrue(messageWrongValues, abs(expectedGreen - actualGreen) <= marginError)
         Assert.assertTrue(messageWrongValues, abs(expectedBlue - actualBlue) <= marginError)
+    }
+
+    fun createGalleryPickActivityResultStub(activity: MainActivity): Intent {
+        val resultIntent = Intent()
+        val uri = getUriToDrawable(activity,R.drawable.myexample)
+        resultIntent.data = uri
+        return resultIntent
+    }
+
+    fun getUriToDrawable(context: Context, drawableId: Int): Uri {
+        return Uri.parse(
+            ContentResolver.SCHEME_ANDROID_RESOURCE +
+                    "://" + context.resources.getResourcePackageName(drawableId)
+                    + '/' + context.resources.getResourceTypeName(drawableId)
+                    + '/' + context.resources.getResourceEntryName(drawableId)
+        )
+    }
+
+    fun singleColor(source: Bitmap, x: Int = 70, y: Int = 60): Triple<Int, Int, Int> {
+        val pixel = source.getPixel(x, y)
+
+        val red = Color.red(pixel)
+        val green = Color.green(pixel)
+        val blue = Color.blue(pixel)
+
+        return  Triple(red,green,blue)
     }
 }

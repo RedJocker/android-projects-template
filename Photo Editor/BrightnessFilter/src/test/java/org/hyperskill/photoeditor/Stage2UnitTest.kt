@@ -14,7 +14,9 @@ import android.widget.Button
 import android.widget.ImageView
 import com.google.android.material.slider.Slider
 import org.hyperskill.photoeditor.TestUtils.assertColorsValues
+import org.hyperskill.photoeditor.TestUtils.createGalleryPickActivityResultStub
 import org.hyperskill.photoeditor.TestUtils.findViewByString
+import org.hyperskill.photoeditor.TestUtils.singleColor
 
 import org.junit.Assert.*
 import org.junit.Test
@@ -215,31 +217,5 @@ class Stage2UnitTest {
         val actualImage = (ivPhoto.drawable as BitmapDrawable).bitmap ?: throw AssertionError(messageNullAfterSlBrightness)
         val actualRgb = singleColor(actualImage, 80, 90)
         assertColorsValues("$messageWrongValues For x=80, y=90", expectedRgb, actualRgb, marginError)
-    }
-
-    private fun singleColor(source: Bitmap, x: Int = 70, y: Int = 60): Triple<Int, Int, Int> {
-        val pixel = source.getPixel(x, y)
-
-        val red = Color.red(pixel)
-        val green = Color.green(pixel)
-        val blue = Color.blue(pixel)
-
-        return  Triple(red,green,blue)
-    }
-
-    private fun createGalleryPickActivityResultStub(activity: MainActivity): Intent {
-        val resultIntent = Intent()
-        val uri = getUriToDrawable(activity, R.drawable.myexample)
-        resultIntent.data = uri
-        return resultIntent
-    }
-
-    private fun getUriToDrawable(context: Context, drawableId: Int): Uri {
-        return Uri.parse(
-            ContentResolver.SCHEME_ANDROID_RESOURCE +
-                    "://" + context.resources.getResourcePackageName(drawableId)
-                    + '/' + context.resources.getResourceTypeName(drawableId)
-                    + '/' + context.resources.getResourceEntryName(drawableId)
-        )
     }
 }

@@ -9,6 +9,7 @@ import android.widget.ImageView
 import com.google.android.material.slider.Slider
 import org.hyperskill.photoeditor.TestUtils.assertColorsValues
 import org.hyperskill.photoeditor.TestUtils.findViewByString
+import org.hyperskill.photoeditor.TestUtils.singleColor
 import org.junit.Assert.*
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -316,15 +317,5 @@ class Stage5UnitTest {
                 expected[i], actual, marginError
             )
         }
-    }
-
-    private fun singleColor(source: Bitmap, x:Int = 70, y:Int = 60): Triple<Int, Int, Int> {
-        val pixel = source.getPixel(x, y)
-
-        val red = Color.red(pixel)
-        val green = Color.green(pixel)
-        val blue = Color.blue(pixel)
-
-        return  Triple(red,green,blue)
     }
 }
