@@ -27,7 +27,7 @@ import java.io.ByteArrayOutputStream
 import kotlin.math.max
 import kotlin.math.min
 
-// version 0.4
+// version 1.0
 @RunWith(RobolectricTestRunner::class)
 class Stage3UnitTest {
     private val messageNullAfterSlBrightness = "Image was null after slBrightness triggered"

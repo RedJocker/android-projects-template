@@ -21,7 +21,7 @@ import org.robolectric.shadows.ShadowActivity
 import org.robolectric.shadows.ShadowLooper
 import kotlin.AssertionError
 
-//version 0.4
+//version 1.0
 @RunWith(RobolectricTestRunner::class)
 class Stage6UnitTest {
 
@@ -73,8 +73,7 @@ class Stage6UnitTest {
     }
 
     private fun testShouldCheckButton(btn: Button, expectedInitialText: String, btnName: String) {
-        Assert.assertEquals(
-            "Wrong text for $btnName",
+        Assert.assertEquals("Wrong text for $btnName",
             expectedInitialText.toUpperCase(), btn.text.toString().toUpperCase()
         )
     }

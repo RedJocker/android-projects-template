@@ -19,7 +19,7 @@ import org.robolectric.shadows.ShadowActivity
 import org.robolectric.shadows.ShadowLooper
 import kotlin.AssertionError
 
-// version 0.4
+// version 1.0
 @RunWith(RobolectricTestRunner::class)
 class Stage4UnitTest {
 

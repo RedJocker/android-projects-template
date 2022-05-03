@@ -23,7 +23,7 @@ import org.robolectric.Shadows.shadowOf
 import java.lang.NullPointerException
 import kotlin.AssertionError
 
-// version 0.4
+// version 1.0
 @RunWith(RobolectricTestRunner::class)
 class Stage1UnitTest {
 

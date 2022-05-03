@@ -29,7 +29,7 @@ import kotlin.AssertionError
 import kotlin.math.max
 import kotlin.math.min
 
-// version 0.4
+// version 1.0
 @RunWith(RobolectricTestRunner::class)
 class Stage2UnitTest {
 
@@ -177,10 +177,6 @@ class Stage2UnitTest {
     fun testShouldCheckNewBitmapEdit() {
         ivPhoto // initializes variable and perform initialization assertions
         slBrightness
-
-        val initialImage2 = (ivPhoto.drawable as BitmapDrawable?)?.bitmap ?: throw AssertionError("abc")
-        val (initialRed2, initialGreen2, initialBlue2) = singleColor(initialImage2)
-
         btnGallery.performClick()
         shadowLooper.runToEndOfTasks()
 
