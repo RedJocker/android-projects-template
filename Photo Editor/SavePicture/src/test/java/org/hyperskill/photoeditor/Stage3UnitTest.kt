@@ -3,7 +3,6 @@ package org.hyperskill.photoeditor
 import android.Manifest
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import android.graphics.drawable.BitmapDrawable
 import android.net.Uri
 import android.os.Looper
@@ -25,7 +24,6 @@ import org.robolectric.android.controller.ActivityController
 import org.robolectric.annotation.Config
 import org.robolectric.shadows.ShadowActivity
 import org.robolectric.shadows.ShadowLooper
-import java.io.ByteArrayOutputStream
 import kotlin.math.max
 import kotlin.math.min
 
@@ -157,12 +155,16 @@ class Stage3UnitTest {
         activity.onRequestPermissionsResult(
             0,
             arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE), arrayOf(
-            PackageManager.PERMISSION_GRANTED).toIntArray()
+                PackageManager.PERMISSION_GRANTED).toIntArray()
         )
         shadowLooper.runToEndOfTasks()
 
+        val messageAfterPermissionShouldSaveImage =
+            "After the permission is granted the image should be saved without " +
+                    "requiring additional clicks"
         val messageWrongUri = "The uri for saving the image is wrong"
-        val actualUri = shadowContentResolver.insertStatements.last().uri
+        val actualUri = shadowContentResolver.insertStatements.lastOrNull()?.uri
+            ?: throw AssertionError(messageAfterPermissionShouldSaveImage)
         assertEquals(messageWrongUri, expectedUri, actualUri)
 
         val messageWrongFormat = "The image saved had wrong format"
