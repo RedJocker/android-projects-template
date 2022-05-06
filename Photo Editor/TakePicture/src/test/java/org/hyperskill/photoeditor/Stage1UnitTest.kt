@@ -15,10 +15,8 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.Robolectric
 import org.robolectric.RobolectricTestRunner
-import org.robolectric.shadows.ShadowActivity
 import org.robolectric.Shadows.shadowOf
-import java.lang.NullPointerException
-import kotlin.AssertionError
+import org.robolectric.shadows.ShadowActivity
 
 // version 1.0
 @RunWith(RobolectricTestRunner::class)
