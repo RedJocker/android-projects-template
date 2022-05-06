@@ -1,13 +1,8 @@
 package org.hyperskill.photoeditor
 
 import android.app.Activity
-import android.content.ContentResolver
-import android.content.Context
 import android.content.Intent
-import android.graphics.Bitmap
-import android.graphics.Color
 import android.graphics.drawable.BitmapDrawable
-import android.net.Uri
 import android.os.Looper
 import android.provider.MediaStore
 import android.widget.Button
@@ -17,7 +12,6 @@ import org.hyperskill.photoeditor.TestUtils.assertColorsValues
 import org.hyperskill.photoeditor.TestUtils.createGalleryPickActivityResultStub
 import org.hyperskill.photoeditor.TestUtils.findViewByString
 import org.hyperskill.photoeditor.TestUtils.singleColor
-
 import org.junit.Assert.*
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -27,7 +21,6 @@ import org.robolectric.Shadows
 import org.robolectric.android.controller.ActivityController
 import org.robolectric.shadows.ShadowActivity
 import org.robolectric.shadows.ShadowLooper
-import kotlin.AssertionError
 import kotlin.math.max
 import kotlin.math.min
 
