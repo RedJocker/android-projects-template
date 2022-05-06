@@ -1,7 +1,5 @@
 package org.hyperskill.photoeditor
 
-import android.graphics.Bitmap
-import android.graphics.Color
 import android.graphics.drawable.BitmapDrawable
 import android.os.Looper
 import android.widget.Button
@@ -10,7 +8,8 @@ import com.google.android.material.slider.Slider
 import org.hyperskill.photoeditor.TestUtils.assertColorsValues
 import org.hyperskill.photoeditor.TestUtils.findViewByString
 import org.hyperskill.photoeditor.TestUtils.singleColor
-import org.junit.Assert.*
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.Robolectric
@@ -18,7 +17,6 @@ import org.robolectric.RobolectricTestRunner
 import org.robolectric.Shadows
 import org.robolectric.shadows.ShadowActivity
 import org.robolectric.shadows.ShadowLooper
-import kotlin.AssertionError
 
 // version 1.0
 @RunWith(RobolectricTestRunner::class)
